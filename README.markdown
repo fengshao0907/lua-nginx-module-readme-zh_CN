@@ -10,7 +10,7 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 目录
 =================
 
-* [Name](#name)
+* [Name](#模块名字)
 * [Status](#status)
 * [Version](#version)
 * [Synopsis](#synopsis)
