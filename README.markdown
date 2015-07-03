@@ -1,6 +1,6 @@
 
 模块名字
-====
+=======
 
 ngx_lua - 将lua脚本能力嵌入到Nginx
 
@@ -8,19 +8,19 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 
 
 目录
-=================
+====
 
-* [Name](#模块名字)
-* [Status](#status)
-* [Version](#version)
-* [Synopsis](#synopsis)
-* [Description](#description)
-* [Typical Uses](#typical-uses)
-* [Nginx Compatibility](#nginx-compatibility)
-* [Installation](#installation)
+* [模块名字](#模块名字)
+* [Status](#状态)
+* [Version](#版本)
+* [Synopsis](#用法)
+* [Description](#描述)
+* [Typical Uses](#典型用法)
+* [Nginx Compatibility](#Nginx兼容性)
+* [Installation](#安装)
     * [C Macro Configurations](#c-macro-configurations)
     * [Installation on Ubuntu 11.10](#installation-on-ubuntu-1110)
-* [Community](#community)
+* [Community](#社区)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
 * [Code Repository](#code-repository)
@@ -232,7 +232,7 @@ This document describes ngx_lua [v0.9.16](https://github.com/openresty/lua-nginx
  }
 ```
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 描述
 ===========
@@ -265,7 +265,7 @@ The Lua interpreter or LuaJIT instance is shared across all the requests in a si
 
 Loaded Lua modules persist in the nginx worker process level resulting in a small memory footprint in Lua even when under heavy loads.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 典型用法
 ============
@@ -286,7 +286,7 @@ Other scripting language implementations typically struggle to match this perfor
 
 The Lua state (Lua VM instance) is shared across all the requests handled by a single nginx worker process to minimize memory use.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Nginx兼容性
 ===================
@@ -303,7 +303,7 @@ The latest module is compatible with the following versions of Nginx:
 * 0.9.x (last tested: 0.9.4)
 * 0.8.x >= 0.8.54 (last tested: 0.8.54)
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 安装
 ============
@@ -347,7 +347,7 @@ Build the source with this module:
  make install
 ```
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 C宏配置
 ----------------------
@@ -367,7 +367,7 @@ To enable one or more of these macros, just pass extra C compiler options to the
     ./configure --with-cc-opt="-DNGX_LUA_USE_ASSERT -DNGX_LUA_ABORT_AT_PANIC"
 
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Ubuntu 11.10安装方法
 ----------------------------
@@ -390,33 +390,33 @@ Library name `liblua.so` has been changed in liblua5.1 package, it only comes wi
  ln -s /usr/lib/x86_64-linux-gnu/liblua5.1.so /usr/lib/liblua.so
 ```
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 社区
 =========
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 英文邮件列表
 --------------------
 
 The [openresty-en](https://groups.google.com/group/openresty-en) mailing list is for English speakers.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 中文邮件列表
 --------------------
 
 The [openresty](https://groups.google.com/group/openresty) mailing list is for Chinese speakers.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 代码库
 ===============
 
 The code repository of this project is hosted on github at [openresty/lua-nginx-module](https://github.com/openresty/lua-nginx-module).
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 缺陷和补丁
 ================
@@ -426,7 +426,7 @@ Please submit bug reports, wishlists, or patches by
 1. creating a ticket on the [GitHub Issue Tracker](https://github.com/openresty/lua-nginx-module/issues),
 1. or posting to the [OpenResty community](#community).
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Lua/LuaJIT字节码支持
 ===========================
@@ -475,7 +475,7 @@ Attempts to load standard Lua 5.1 bytecode files into ngx_lua instances linked t
 
 Loading bytecode files via the Lua primitives like `require` and `dofile` should always work as expected.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 系统环境变量支持
 ===================================
@@ -487,7 +487,7 @@ If you want to access the system environment variable, say, `foo`, in Lua via th
  env foo;
 ```
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 HTTP 1.0支持
 ================
@@ -503,7 +503,7 @@ For large streaming output responses, it is important to disable the [lua_http10
 Note that common HTTP benchmark tools such as `ab` and `http_load` issue HTTP 1.0 requests by default.
 To force `curl` to send HTTP 1.0 requests, use the `-0` option.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 静态连接纯lua模块
 ===================================
@@ -584,7 +584,7 @@ then you can link the `myluafiles` archive as a whole to your nginx executable:
 
 where `/path/to/lib` is the path of the directory containing the `libmyluafiles.a` file. It should be noted that the linker option `--whole-archive` is required here because otherwise our archive will be skipped because no symbols in our archive are mentioned in the main parts of the nginx executable.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Nginx工作进程间的数据共享
 ===================================
@@ -645,12 +645,12 @@ If server-wide data sharing is required, then use one or more of the following a
 1. Use only a single nginx worker and a single server (this is however not recommended when there is a multi core CPU or multiple CPUs in a single machine).
 1. Use data storage mechanisms such as `memcached`, `redis`, `MySQL` or `PostgreSQL`. [The ngx_openresty bundle](http://openresty.org) associated with this module comes with a set of companion Nginx modules and Lua libraries that provide interfaces with these data storage mechanisms.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 已知问题
 ============
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 TCP套接字连接操作问题 
 -----------------------------------
@@ -660,14 +660,14 @@ However, later attempts to manipulate the cosocket object will fail and return t
 
 This issue is due to limitations in the Nginx event model and only appears to affect Mac OS X.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Lua协程的Yielding/Resuming
 -------------------------------
 * Because Lua's `dofile` and `require` builtins are currently implemented as C functions in both Lua 5.1 and LuaJIT 2.0/2.1, if the Lua file being loaded by `dofile` or `require` invokes [ngx.location.capture*](#ngxlocationcapture), [ngx.exec](#ngxexec), [ngx.exit](#ngxexit), or other API functions requiring yielding in the *top-level* scope of the Lua file, then the Lua error "attempt to yield across C-call boundary" will be raised. To avoid this, put these calls requiring yielding into your own Lua functions in the Lua file instead of the top-level scope of the file.
 * As the standard Lua 5.1 interpreter's VM is not fully resumable, the methods [ngx.location.capture](#ngxlocationcapture), [ngx.location.capture_multi](#ngxlocationcapture_multi), [ngx.redirect](#ngxredirect), [ngx.exec](#ngxexec), and [ngx.exit](#ngxexit) cannot be used within the context of a Lua [pcall()](http://www.lua.org/manual/5.1/manual.html#pdf-pcall) or [xpcall()](http://www.lua.org/manual/5.1/manual.html#pdf-xpcall) or even the first line of the `for ... in ...` statement when the standard Lua 5.1 interpreter is used and the `attempt to yield across metamethod/C-call boundary` error will be produced. Please use LuaJIT 2.x, which supports a fully resumable VM, to avoid this.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Lua变量作用域
 ------------------
@@ -707,7 +707,7 @@ The output says that the line 1489 of file `lib/foo/bar.lua` writes to a global 
 
 This tool will guarantee that local variables in the Lua module functions are all declared with the `local` keyword, otherwise a runtime exception will be thrown. It prevents undesirable race conditions while accessing such variables. See [Data Sharing within an Nginx Worker](#data-sharing-within-an-nginx-worker) for the reasons behind this.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 其他模块子请求配置的Location
 --------------------------------------------------------------
@@ -735,7 +735,7 @@ The [ngx.location.capture](#ngxlocationcapture) and [ngx.location.capture_multi]
 
 will not work as expected.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Cosocket在任何位置不可用
 ----------------------------------
@@ -746,7 +746,7 @@ The cosockets are currently also disabled in the [init_by_lua*](#init_by_lua) an
 
 There exists a work-around, however, when the original context does *not* need to wait for the cosocket results. That is, creating a 0-delay timer via the [ngx.timer.at](#ngxtimerat) API and do the cosocket results in the timer handler, which runs asynchronously as to the original context creating the timer.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 特殊转义序列
 --------------------------
@@ -838,21 +838,21 @@ Within external script files, PCRE sequences presented as long-bracketed Lua str
  -- evaluates to "1234"
 ```
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 不支持与SSI混合使用
 -----------------------------
 
 Mixing SSI with ngx_lua in the same Nginx request is not supported at all. Just use ngx_lua exclusively. Everything you can do with SSI can be done atop ngx_lua anyway and it can be more efficient when using ngx_lua.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 不完全支持SPDY模式
 -----------------------------
 
 Certain Lua APIs provided by ngx_lua do not work in Nginx's SPDY mode yet: [ngx.location.capture](#ngxlocationcapture), [ngx.location.capture_multi](#ngxlocationcapture_multi), and [ngx.req.socket](#ngxreqsocket).
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 短路请求丢失数据
 ----------------------------------------
@@ -873,7 +873,7 @@ access phase. This also means that later phases that are run regardless, e.g.
 [log_by_lua](#log_by_lua), will not have access to information that is normally set in those
 phases.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 待办事项
 =======
@@ -935,7 +935,7 @@ phases.
 * add automatic Lua code time slicing support by yielding and resuming the Lua VM actively via Lua's debug hooks.
 * add `stat` mode similar to [mod_lua](https://httpd.apache.org/docs/trunk/mod/mod_lua.html).
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 改动
 =======
@@ -944,7 +944,7 @@ The changes of every release of this module can be obtained from the ngx_openres
 
 <http://openresty.org/#Changes>
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 测试组件
 ==========
@@ -1002,7 +1002,7 @@ To run a specific test block in a particular test file, add the line `--- ONLY` 
 
 There are also various testing modes based on mockeagain, valgrind, and etc. Refer to the [Test::Nginx documentation](http://search.cpan.org/perldoc?Test::Nginx) for more details for various advanced testing modes. See also the test reports for the Nginx test cluster running on Amazon EC2: <http://qa.openresty.org.>
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 版权和许可证
 =====================
@@ -1023,7 +1023,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 一些链接
 ========
@@ -1049,7 +1049,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 * [The ngx_openresty bundle](http://openresty.org)
 * [Nginx Systemtap Toolkit](https://github.com/openresty/nginx-systemtap-toolkit)
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 指令列表
 ==========
@@ -1101,7 +1101,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 * [lua_max_running_timers](#lua_max_running_timers)
 
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 lua_use_default_type
 --------------------
@@ -2522,7 +2522,7 @@ Nginx API for Lua
 * [coroutine.status](#coroutinestatus)
 
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Introduction
 ------------
@@ -6979,7 +6979,7 @@ Obsolete Sections
 
 This section is just holding obsolete documentation sections that have been either renamed or removed so that existing links over the web are still valid.
 
-[回到目录](#table-of-contents)
+[回到目录](#目录)
 
 Special PCRE Sequences
 ----------------------
