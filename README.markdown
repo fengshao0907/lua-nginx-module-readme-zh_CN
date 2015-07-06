@@ -10,17 +10,17 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 目录
 ====
 
-* [模块名字](#模块名字)
-* [Status](#状态)
-* [Version](#版本)
-* [Synopsis](#用法)
-* [Description](#描述)
-* [Typical Uses](#典型用法)
-* [Nginx Compatibility](#Nginx兼容性)
-* [Installation](#安装)
+* [模块名字](#name)
+* [Status](#status)
+* [Version](#version)
+* [Synopsis](#synopsis)
+* [Description](#description)
+* [Typical Uses](#typical-uses)
+* [Nginx Compatibility](#nginx-compatibility)
+* [Installation](#installation)
     * [C Macro Configurations](#c-macro-configurations)
     * [Installation on Ubuntu 11.10](#installation-on-ubuntu-1110)
-* [Community](#社区)
+* [Community](#community)
     * [English Mailing List](#english-mailing-list)
     * [Chinese Mailing List](#chinese-mailing-list)
 * [Code Repository](#code-repository)
@@ -4452,21 +4452,21 @@ There is a hard coded `2048` byte limitation on error message lengths in the Ngi
 
 ngx.flush
 ---------
-**syntax:** *ok, err = ngx.flush(wait?)*
+**语法:** *ok, err = ngx.flush(wait?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Flushes response output to the client. 
+强制发送响应给客户端。
 
-`ngx.flush` accepts an optional boolean `wait` argument (Default: `false`) first introduced in the `v0.3.1rc34` release. When called with the default argument, it issues an asynchronous call (Returns immediately without waiting for output data to be written into the system send buffer). Calling the function with the `wait` argument set to `true` switches to synchronous mode. 
+`ngx.flush`接受一个可选布尔参数`wait`（默认为false）。当带有默认参数调用该函数时，将发起一个异步调用（不等待数据写入系统发送缓存，立即返回）。当带有参数`wait`设为true调用该函数时，将转为同步模式。 
 
-In synchronous mode, the function will not return until all output data has been written into the system send buffer or until the [send_timeout](http://nginx.org/en/docs/http/ngx_http_core_module.html#send_timeout) setting has expired. Note that using the Lua coroutine mechanism means that this function does not block the Nginx event loop even in the synchronous mode.
+在同步模式下，除非所有的数据都已经写入系统发送缓冲区或者[send_timeout](http://nginx.org/en/docs/http/ngx_http_core_module.html#send_timeout)超时到达，该函数一直不会返回。注意，使用lua的协程机制意味着在同步模式下该函数不会阻塞nginx事件循环。
 
-When `ngx.flush(true)` is called immediately after [ngx.print](#ngxprint) or [ngx.say](#ngxsay), it causes the latter functions to run in synchronous mode. This can be particularly useful for streaming output.
+当`ngx.flush(true)`在[ngx.print](#ngxprint)或者[ngx.say](#ngxsay)立即调用时，会使之后的函数运行在同步模式。这在流输出时非常有用。
 
-Note that `ngx.flush` is not functional when in the HTTP 1.0 output buffering mode. See [HTTP 1.0 support](#http-10-support).
+但值得注意的是，`ngx.flush`在HTTP 1.0的output buffering模式下不起作用，详情见[HTTP 1.0支持](#http-10-support)。
 
-Since `v0.8.3` this function returns `1` on success, or returns `nil` and a string describing the error otherwise.
+从`v0.8.3`起，该函数成功返回`1`，否则返回`nil`和一个描述错误的字符串。
 
 [回到目录](#nginx-api-for-lua)
 
