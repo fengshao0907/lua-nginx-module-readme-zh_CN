@@ -4472,28 +4472,27 @@ ngx.flush
 
 ngx.exit
 --------
-**syntax:** *ngx.exit(status)*
+**语法:** *ngx.exit(status)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, ngx.timer.**
 
-When `status >= 200` (i.e., `ngx.HTTP_OK` and above), it will interrupt the execution of the current request and return status code to nginx.
+当`status >= 200`（即`ngx.HTTP_OK`或更大）时，将中断当前请求的执行，并向nginx返回状态码。
 
-When `status == 0` (i.e., `ngx.OK`), it will only quit the current phase handler (or the content handler if the [content_by_lua](#content_by_lua) directive is used) and continue to run later phases (if any) for the current request.
+当`status == 0`（即`ngx.OK`）时，只是退出当前阶段的回调函数，会继续执行当前请求的下一阶段的回调函数。
 
-The `status` argument can be `ngx.OK`, `ngx.ERROR`, `ngx.HTTP_NOT_FOUND`,
-`ngx.HTTP_MOVED_TEMPORARILY`, or other [HTTP status constants](#http-status-constants).
+参数`status`可以取值`ngx.OK`，`ngx.ERROR`，`ngx.HTTP_NOT_FOUND`，`ngx.HTTP_MOVED_TEMPORARILY`，或者其他[HTTP状态常量](#http-status-constants)。
 
-To return an error page with custom contents, use code snippets like this:
+要返回带有自定义内容的错误页，可以像下面这样书写代码：
 
 ```lua
 
  ngx.status = ngx.HTTP_GONE
  ngx.say("This is our own content")
- -- to cause quit the whole request rather than the current phase handler
+ -- 退出整个请求的执行
  ngx.exit(ngx.HTTP_OK)
 ```
 
-The effect in action:
+执行效果：
 
 ```bash
 
@@ -4508,30 +4507,30 @@ The effect in action:
  This is our own content
 ```
 
-Number literals can be used directly as the argument, for instance,
+数字也可以直接用于状态参数，例如
 
 ```lua
 
  ngx.exit(501)
 ```
 
-Note that while this method accepts all [HTTP status constants](#http-status-constants) as input, it only accepts `NGX_OK` and `NGX_ERROR` of the [core constants](#core-constants).
+注意，虽然这个方法接受所有的[HTTP状态常量](#http-status-constants)作为输入，但它只接受`NGX_OK`和`NGX_ERROR`两个[核心常量](#core-constants)。
 
-Also note that this method call terminates the processing of the current request and that it is recommended that a coding style that combines this method call with the `return` statement, i.e., `return ngx.exit(...)` be used to reinforce the fact that the request processing is being terminated.
+还有，因为该函数可以终止当前请求的处理，所以建议的编程风格是该函数与`return`语句连同使用，如`return ngx.exit(...)`用来强化当前请求结束的事实。
 
-When being used in the context of [header_filter_by_lua](#header_filter_by_lua), `ngx.exit()` is an asynchronous operation and will return immediately. This behavior may change in future and it is recommended that users always use `return` in combination as suggested above.
+当该函数用在[header_filter_by_lua](#header_filter_by_lua)上下文时，`ngx.exit()`为异步操作，会立即返回。这种行为在未来可能会改变，因此建议用户总是将其与`return`一起使用。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.eof
 -------
-**syntax:** *ok, err = ngx.eof()*
+**语法:** *ok, err = ngx.eof()*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Explicitly specify the end of the response output stream. In the case of HTTP 1.1 chunked encoded output, it will just trigger the Nginx core to send out the "last chunk".
+显示标示响应流的结束。在HTTP 1.1协议中的chunked编码输出时，该函数会触发Nginx内核发送最后一个chunk。
 
-When you disable the HTTP 1.1 keep-alive feature for your downstream connections, you can rely on descent HTTP clients to close the connection actively for you when you call this method. This trick can be used do back-ground jobs without letting the HTTP clients to wait on the connection, as in the following example:
+如果你禁用了下游连接HTTP 1.1协议的keep-alive功能，你可以用此方法使下游客户主动关闭连接。这种技术可以用于后台任务，而不必使HTTP客户在连接上等待，就像下面这样：
 
 ```nginx
 
@@ -4539,22 +4538,22 @@ When you disable the HTTP 1.1 keep-alive feature for your downstream connections
      keepalive_timeout 0;
      content_by_lua '
          ngx.say("got the task!")
-         ngx.eof()  -- a descent HTTP client will close the connection at this point
-         -- access MySQL, PostgreSQL, Redis, Memcached, and etc here...
+         ngx.eof()  -- 此处HTTP客户端会关闭连接
+         -- 在此处访问MySQL, PostgreSQL, Redis, Memcached等
      ';
  }
 ```
 
-But if you create subrequests to access other locations configured by Nginx upstream modules, then you should configure those upstream modules to ignore client connection abortions if they are not by default. For example, by default the standard [ngx_http_proxy_module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html) will terminate both the subrequest and the main request as soon as the client closes the connection, so it is important to turn on the [proxy_ignore_client_abort](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_ignore_client_abort) directive in your location block configured by [ngx_http_proxy_module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html):
+但是，如果你创建子请求访问Nginx上游模块配置的其他location，你需要配置这些上游模块忽略客户端连接退出。例如，默认情况下，客户端关闭连接，标准[ngx_http_proxy_module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html)会终止子请求和主请求的处理。所以，请在你的[ngx_http_proxy_module](http://nginx.org/en/docs/http/ngx_http_proxy_module.html)配置的location中打开[proxy_ignore_client_abort](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_ignore_client_abort)指令：
 
 ```nginx
 
  proxy_ignore_client_abort on;
 ```
 
-A better way to do background jobs is to use the [ngx.timer.at](#ngxtimerat) API.
+更好的一种执行后台任务的做法是使用[ngx.timer.at](#ngxtimerat) API。
 
-Since `v0.8.3` this function returns `1` on success, or returns `nil` and a string describing the error otherwise.
+从`v0.8.3`版本后，该函数成功返回`1`，否则返回`nil`和一个描述错误的字符串。
 
 [回到目录](#nginx-api-for-lua)
 
