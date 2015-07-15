@@ -3241,10 +3241,9 @@ Please also refer to restrictions on capturing locations configured by [subreque
 
 ngx.status
 ----------
-**context:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
+**上下文:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
 
-Read and write the current request's response status. This should be called
-before sending out the response headers.
+读写当前请求的响应状态。该函数应该在响应头被发送出去之前调用。
 
 ```lua
 
@@ -3252,7 +3251,7 @@ before sending out the response headers.
  status = ngx.status
 ```
 
-Setting `ngx.status` after the response header is sent out has no effect but leaving an error message in your nginx's error log file:
+在响应头发送出去之后设置`ngx.status`将不起作用，但会在nginx的错误日志中留下错误信息：
 
 
     attempt to set ngx.status after sending out response headers
@@ -3262,34 +3261,34 @@ Setting `ngx.status` after the response header is sent out has no effect but lea
 
 ngx.header.HEADER
 -----------------
-**syntax:** *ngx.header.HEADER = VALUE*
+**语法:** *ngx.header.HEADER = VALUE*
 
-**syntax:** *value = ngx.header.HEADER*
+**语法:** *value = ngx.header.HEADER*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
 
-Set, add to, or clear the current request's `HEADER` response header that is to be sent.
+设置、增加或者清除当前请求的头部字段。
 
-Underscores (`_`) in the header names will be replaced by hyphens (`-`) by default. This transformation can be turned off via the [lua_transform_underscores_in_response_headers](#lua_transform_underscores_in_response_headers) directive.
+默认情况下，字段名中的下划线(`_`)会被短横线(`-`)替换。该转换可以通过[lua_transform_unserscores_in_response_headers](#lua_transform_underscores_in_response_headers)指令关闭。
 
-The header names are matched case-insensitively.
+头部字段名字是`大小写敏感`的。
 
 ```lua
 
- -- equivalent to ngx.header["Content-Type"] = 'text/plain'
+ -- 等同于ngx.header["Content-Type"] = 'text/plain'
  ngx.header.content_type = 'text/plain';
 
  ngx.header["X-My-Header"] = 'blah blah';
 ```
 
-Multi-value headers can be set this way:
+多值头部字段这样设置：
 
 ```lua
 
  ngx.header['Set-Cookie'] = {'a=32; path=/', 'b=4; path=/'}
 ```
 
-will yield
+响应头输出如下：
 
 ```bash
 
@@ -3297,43 +3296,39 @@ will yield
  Set-Cookie: b=4; path=/
 ```
 
-in the response headers. 
-
-Only Lua tables are accepted (Only the last element in the table will take effect for standard headers such as `Content-Type` that only accept a single value).
+仅接受Lua table类型（像`Content-Type`这种单值头部，仅table的最后一个值生效）。
 
 ```lua
 
  ngx.header.content_type = {'a', 'b'}
 ```
 
-is equivalent to
+等同于：
 
 ```lua
 
  ngx.header.content_type = 'b'
 ```
 
-Setting a slot to `nil` effectively removes it from the response headers:
+将一个槽设置为`nil`等同于从响应头中删除它：
 
 ```lua
 
  ngx.header["X-My-Header"] = nil;
 ```
 
-The same applies to assigning an empty table:
+同样的效果可以通过将其设置为一个空table达到:
 
 ```lua
 
  ngx.header["X-My-Header"] = {};
 ```
 
-Setting `ngx.header.HEADER` after sending out response headers (either explicitly with [ngx.send_headers](#ngxsend_headers) or implicitly with [ngx.print](#ngxprint) and similar) will throw out a Lua exception.
+在发送响应头之后（或者显式地调用[ngx.send_headers](#ngxsend_headers)或者隐式地调用[ngx.print](#ngxprint)或类似的函数）设置`ngx.header.HEADER`会抛出Lua异常。
 
-Reading `ngx.header.HEADER` will return the value of the response header named `HEADER`. 
+读取`ngx.header.HEADER`会返回名字为`HEADER`的响应头值。
 
-Underscores (`_`) in the header names will also be replaced by dashes (`-`) and the header names will be matched case-insensitively. If the response header is not present at all, `nil` will be returned.
-
-This is particularly useful in the context of [header_filter_by_lua](#header_filter_by_lua) and [header_filter_by_lua_file](#header_filter_by_lua_file), for example,
+该指令在上下文[header_filter_by_lua](#header_filter_by_lua)和[header_filter_by_lua_file](#header_filter_by_lua_file)下尤其有效，例如：
 
 ```nginx
 
@@ -3352,35 +3347,32 @@ This is particularly useful in the context of [header_filter_by_lua](#header_fil
  }
 ```
 
-For multi-value headers, all of the values of header will be collected in order and returned as a Lua table. For example, response headers
+对于多值的头部，头部的所有值会按照顺序被收集，并以Lua table的形式返回。例如，响应头
 
 
     Foo: bar
     Foo: baz
 
-
-will result in
+通过读取`ngx.header.Foo`会返回
 
 ```lua
 
  {"bar", "baz"}
 ```
 
-to be returned when reading `ngx.header.Foo`.
+注意，`ngx.header`并不是一个正规的Lua table类型，因此你不能用`ipaires`函数来迭代遍历它。
 
-Note that `ngx.header` is not a normal Lua table and as such, it is not possible to iterate through it using the Lua `ipairs` function.
-
-For reading *request* headers, use the [ngx.req.get_headers](#ngxreqget_headers) function instead.
+要读取*请求*头，请使用[ngx.req.get_headers](#ngxreqget_headers)函数。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.resp.get_headers
 --------------------
-**syntax:** *headers = ngx.resp.get_headers(max_headers?, raw?)*
+**语法:** *headers = ngx.resp.get_headers(max_headers?, raw?)*
 
-**context:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
+**上下文:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua**
 
-Returns a Lua table holding all the current response headers for the current request.
+对当前请求返回包含所有当前响应头的Lua table。
 
 ```lua
 
@@ -3390,9 +3382,9 @@ Returns a Lua table holding all the current response headers for the current req
  end
 ```
 
-This function has the same signature as [ngx.req.get_headers](#ngxreqget_headers) except getting response headers instead of request headers.
+除了获取请求头部和响应头部的区别，该函数与[ngx.req.get_headers](#ngxreqget_headers)并不差别。
 
-This API was first introduced in the `v0.9.5` release.
+该API最早出现在`v0.9.5`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6471,19 +6463,19 @@ This API was first enabled in the `v0.7.0` release.
 
 ngx.thread.wait
 ---------------
-**syntax:** *ok, res1, res2, ... = ngx.thread.wait(thread1, thread2, ...)*
+**语法:** *ok, res1, res2, ... = ngx.thread.wait(thread1, thread2, ...)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Waits on one or more child "light threads" and returns the results of the first "light thread" that terminates (either successfully or with an error).
+等待一个或多个子"线程"结束，并返回第一个”线程“的结果（可能成功也可能失败）。
 
-The arguments `thread1`, `thread2`, and etc are the Lua thread objects returned by earlier calls of [ngx.thread.spawn](#ngxthreadspawn).
+参数`thread1`, `thread2`等是先前调用[ngx.thread.spawn](#ngxthreadspawn)返回的Lua线程对象。
 
-The return values have exactly the same meaning as [coroutine.resume](#coroutineresume), that is, the first value returned is a boolean value indicating whether the "light thread" terminates successfully or not, and subsequent values returned are the return values of the user Lua function that was used to spawn the "light thread" (in case of success) or the error object (in case of failure).
+返回值的含义与[coroutine.resume](#coroutineresume)的返回值含义相同，即第一个值为布尔值，表示”线程“是否成功返回；之后的返回值表示用户Lua函数的返回值，用于产生”线程“（成功的情况）或错误对象（失败的情况）。
 
-Only the direct "parent coroutine" can wait on its child "light thread", otherwise a Lua exception will be raised.
+只有直接"父协程"才能等待其"子线程"，否则产生Lua异常。
 
-The following example demonstrates the use of `ngx.thread.wait` and [ngx.location.capture](#ngxlocationcapture) to emulate [ngx.location.capture_multi](#ngxlocationcapture_multi):
+下面的例子展示了`ngx.thread.wait`和[ngx.location.capture](#ngxlocationcapture)的用法，用来模拟[ngx.location.capture_multi](#ngxlocationcapture_multi):
 
 ```lua
 
@@ -6513,9 +6505,9 @@ The following example demonstrates the use of `ngx.thread.wait` and [ngx.locatio
  end
 ```
 
-Here it essentially implements the "wait all" model.
+这本质上实现了"wait all"模式。
 
-And below is an example demonstrating the "wait any" model:
+下面的例子展示了"wait any"的模式：
 
 ```lua
 
@@ -6559,7 +6551,7 @@ And below is an example demonstrating the "wait any" model:
  ngx.exit(ngx.OK)
 ```
 
-And it will generate the following output:
+输出如下：
 
 
     f thread created: running
@@ -6568,7 +6560,7 @@ And it will generate the following output:
     res: g done
 
 
-This API was first enabled in the `v0.7.0` release.
+该API最早出现在`v0.7.0`版本。
 
 [回到目录](#nginx-api-for-lua)
 
