@@ -2600,11 +2600,11 @@ The data chunk and "eof" flag passed to the downstream Nginx output filters can 
 
 ngx.var.VARIABLE
 ----------------
-**syntax:** *ngx.var.VAR_NAME*
+**语法:** *ngx.var.VAR_NAME*
 
-**context:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua**
+**上下文:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua**
 
-Read and write Nginx variable values.
+读写Nginx变量的值。
 
 ```nginx
 
@@ -2612,13 +2612,12 @@ Read and write Nginx variable values.
  ngx.var.some_nginx_variable_name = value
 ```
 
-Note that only already defined nginx variables can be written to.
-For example:
+注意，只有已经定义的nginx变量才能被写入。例如：
 
 ```nginx
 
  location /foo {
-     set $my_var ''; # this line is required to create $my_var at config time
+     set $my_var ''; # 这一行是必须的，用于在配置时生成$my_var变量
      content_by_lua '
          ngx.var.my_var = 123;
          ...
@@ -2626,32 +2625,30 @@ For example:
  }
 ```
 
-That is, nginx variables cannot be created on-the-fly.
+也就是说，nginx变量不能凭空创建，需要set指令。
 
-Some special nginx variables like `$args` and `$limit_rate` can be assigned a value,
-many others are not, like `$query_string`, `$arg_PARAMETER`, and `$http_NAME`.
+像`$args`和`$limit_rate`这样的特殊nginx变量可以被赋值，其他像`$query_string`，`$arg_PARAMETER`和`$http_NAME`这些变量不能修改。
 
-Nginx regex group capturing variables `$1`, `$2`, `$3`, and etc, can be read by this
-interface as well, by writing `ngx.var[1]`, `ngx.var[2]`, `ngx.var[3]`, and etc.
+Nginx正则捕获组变量`$1`，`$2`，`$3`等也可以通过此方法被读取，写法为`ngx.var[1]`，`ngx.var[2]`，`ngx.var[3]`等。
 
-Setting `ngx.var.Foo` to a `nil` value will unset the `$Foo` Nginx variable. 
+将`ngx.var.Foo`置为`nil`会把Nginx变量`$Foo`的值重置。
 
 ```lua
 
  ngx.var.args = nil
 ```
 
-**WARNING** When reading from an Nginx variable, Nginx will allocate memory in the per-request memory pool which is freed only at request termination. So when you need to read from an Nginx variable repeatedly in your Lua code, cache the Nginx variable value to your own Lua variable, for example,
+**警告** 当读取Nginx变量时，Nginx会在每个请求的内存池中分配内存，分配的内存在请求结束时才会释放内存。因此，如果在你的Lua代码中要频繁的读取一个Nginx变量，推荐的做法是在Lua局部变量中环城该Nginx变量。例如：
 
 ```lua
 
  local val = ngx.var.some_var
- --- use the val repeatedly later
+ --- 之后可以频繁使用val了
 ```
 
-to prevent (temporary) memory leaking within the current request's lifetime. Another way of caching the result is to use the [ngx.ctx](#ngxctx) table.
+在当前请求的生命周期内，防止（临时）内存泄漏的另一种做法是使用[ngx.ctx](#ngxctx)缓存结果。
 
-This API requires a relatively expensive metamethod call and it is recommended to avoid using it on hot code paths.
+该API需要相对昂贵的元方法调用，建议避免在热代码中使用它。
 
 [回到目录](#nginx-api-for-lua)
 
