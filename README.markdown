@@ -4265,83 +4265,80 @@ It is recommended that a coding style that combines this method call with the `r
 
 ngx.redirect
 ------------
-**syntax:** *ngx.redirect(uri, status?)*
+**语法:** *ngx.redirect(uri, status?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Issue an `HTTP 301` or `302` redirection to `uri`.
+发起`HTTP 301`或者`302`重定向到指定`uri`。
 
-The optional `status` parameter specifies whether
-`301` or `302` to be used. It is `302` (`ngx.HTTP_MOVED_TEMPORARILY`) by default.
+可选参数`status`指定`301`或`302`。默认情况下是`302`（`ngx.HTTP_MOVED_TEMPORARILY`）。
 
-Here is an example assuming the current server name is `localhost` and that it is listening on port 1984:
+下面的例子假设当前服务器名字为`localhost`，监听端口1984：
 
 ```lua
 
  return ngx.redirect("/foo")
 ```
 
-which is equivalent to
+等价于
 
 ```lua
 
  return ngx.redirect("/foo", ngx.HTTP_MOVED_TEMPORARILY)
 ```
 
-Redirecting arbitrary external URLs is also supported, for example:
+也可以重定向到任意外部URL，例如：
 
 ```lua
 
  return ngx.redirect("http://www.google.com")
 ```
 
-We can also use the numerical code directly as the second `status` argument:
+第二个参数`status`也可以直接用数字代替：
 
 ```lua
 
  return ngx.redirect("/foo", 301)
 ```
 
-This method is similar to the [rewrite](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#rewrite) directive with the `redirect` modifier in the standard
-[ngx_http_rewrite_module](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html), for example, this `nginx.conf` snippet
+该方法与带有`redirect`修饰符的[rewrite](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#rewrite)指令十分类似，详情看[这里](ngx_http_rewrite_module](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html).例如，下面nginx.conf的配置：
 
 ```nginx
 
  rewrite ^ /foo? redirect;  # nginx config
 ```
 
-is equivalent to the following Lua code
+等价于下面的Lua代码：
 
 ```lua
 
  return ngx.redirect('/foo');  -- Lua code
 ```
 
-while
+同样，
 
 ```nginx
 
  rewrite ^ /foo? permanent;  # nginx config
 ```
 
-is equivalent to
+等价于
 
 ```lua
 
  return ngx.redirect('/foo', ngx.HTTP_MOVED_PERMANENTLY)  -- Lua code
 ```
 
-URI arguments can be specified as well, for example:
+也可以指定URI参数，例如：
 
 ```lua
 
  return ngx.redirect('/foo?a=3&b=4')
 ```
 
-Note that this method call terminates the processing of the current request and that it *must* be called before [ngx.send_headers](#ngxsend_headers) or explicit response body
-outputs by either [ngx.print](#ngxprint) or [ngx.say](#ngxsay).
+注意，该方法调用会终止当前请求的执行，所以你必须在调用[ngx.send_headers](#ngxsend_headers)或显式发送响应体的函数[ngx.print](#ngxprint)和[ngx.say](#ngxsay)之前被调用。
 
-It is recommended that a coding style that combines this method call with the `return` statement, i.e., `return ngx.redirect(...)` be adopted when this method call is used in contexts other than [header_filter_by_lua](#header_filter_by_lua) to reinforce the fact that the request processing is being terminated.
+建议的编码风格是该方法调用总是和`return`语句一起使用，例如，`return ngx.redirect(...)`，用以加强请求处理终止的事实。一个例外是，不要在[header_filter_by_lua](#header_filter_by_lua)上下文中这么做。
 
 [回到目录](#nginx-api-for-lua)
 
