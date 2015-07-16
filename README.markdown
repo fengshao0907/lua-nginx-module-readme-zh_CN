@@ -4301,7 +4301,7 @@ ngx.redirect
  return ngx.redirect("/foo", 301)
 ```
 
-该方法与带有`redirect`修饰符的[rewrite](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#rewrite)指令十分类似，详情看[这里](ngx_http_rewrite_module](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html).例如，下面nginx.conf的配置：
+该方法与带有`redirect`修饰符的[rewrite](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#rewrite)指令十分类似，详情看[ngx_http_rewrite_module](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html).例如，下面nginx.conf的配置：
 
 ```nginx
 
