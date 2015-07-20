@@ -5834,11 +5834,11 @@ This feature was first introduced in the `v0.5.7` release.
 
 ngx.socket.tcp
 --------------
-**syntax:** *tcpsock = ngx.socket.tcp()*
+**语法:** *tcpsock = ngx.socket.tcp()*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Creates and returns a TCP or stream-oriented unix domain socket object (also known as one type of the "cosocket" objects). The following methods are supported on this object:
+创建并返回一个TCP或流式unix domain socket对象（一种“cosocket"对象类型）。该对象支持以下方法：
 
 * [connect](#tcpsockconnect)
 * [sslhandshake](#tcpsocksslhandshake)
@@ -5851,55 +5851,49 @@ Creates and returns a TCP or stream-oriented unix domain socket object (also kno
 * [setkeepalive](#tcpsocksetkeepalive)
 * [getreusedtimes](#tcpsockgetreusedtimes)
 
-It is intended to be compatible with the TCP API of the [LuaSocket](http://w3.impa.br/~diego/software/luasocket/tcp.html) library but is 100% nonblocking out of the box. Also, we introduce some new APIs to provide more functionalities.
+该对象尽量做到兼容[LuaSocket](http://w3.impa.br/~diego/software/luasocket/tcp.html)库的TCP API，但是100%非阻塞。另外，会引入一些新的API增强功能。
 
-The cosocket object created by this API function has exactly the same lifetime as the Lua handler creating it. So never pass the cosocket object to any other Lua handler (including ngx.timer callback functions) and never share the cosocket object between different NGINX requests.
+该函数创建的cosocket对象，生命周期与创建该对象的Lua处理函数相同。所以，不可以将cosocket对象传递给其他Lua处理函数（包括ngx.timer回调函数）。也不要在不同的Nginx请求之间共享cosocket对象。
 
-For every cosocket object's underlying connection, if you do not
-explicitly close it (via [close](#tcpsockclose)) or put it back to the connection
-pool (via [setkeepalive](#tcpsocksetkeepalive)), then it is automatically closed when one of
-the following two events happens:
+对于一个连接上的每个cosocket对象，如果你不显式的关闭（通过调用[close](#tcpsockclose))或者将其放回连接池（通过[setkeepalive](#tcpsocksetkeepalive))，那么以下两个事件任意一个发生，它会自动关闭：
 
-* the current request handler completes, or
-* the Lua cosocket object value gets collected by the Lua GC.
+* 当前请求处理结束；
+* Lua cosocket对象的值被Lua GC回收。
 
-Fatal errors in cosocket operations always automatically close the current
-connection (note that, read timeout error is the only error that is
-not fatal), and if you call [close](#tcpsockclose) on a closed connection, you will get
-the "closed" error.
+在操作cosocket过程中如果发生致命错误，cosocket总是会自动关闭当前连接（注意，读超时错误并不属于致命错误），并且，如果你在一个已关闭的连接上再调用[close](#tcpsockclose)，会得到一个"已关闭"错误。
 
-Starting from the `0.9.9` release, the cosocket object here is full-duplex, that is, a reader "light thread" and a writer "light thread" can operate on a single cosocket object simultaneously (both "light threads" must belong to the same Lua handler though, see reasons above). But you cannot have two "light threads" both reading (or writing or connecting) the same cosocket, otherwise you might get an error like "socket busy reading" when calling the methods of the cosocket object.
+从`v0.9.9`版本开始，cosocket对象就已经是全双工的了。也就是说，一个读"轻线程"和一个写"轻线程"可以同时操作同一个cosocket对象（但两个"轻线程"必须属于同一个Lua处理函数，原因见上面）。但是，你不能在同一个cosocket对象上同时有两个"轻线程"进行读操作（写操作，连接操作同样），否则，当你调用cosocket的方法时，可能会获得”socket busy reading“的错误。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
-See also [ngx.socket.udp](#ngxsocketudp).
+See also [ngx.socket.udp](#ngxsocketudp)。
 
 [回到目录](#nginx-api-for-lua)
 
 tcpsock:connect
 ---------------
-**syntax:** *ok, err = tcpsock:connect(host, port, options_table?)*
+**语法:** *ok, err = tcpsock:connect(host, port, options_table?)*
 
-**syntax:** *ok, err = tcpsock:connect("unix:/path/to/unix-domain.socket", options_table?)*
+**语法:** *ok, err = tcpsock:connect("unix:/path/to/unix-domain.socket", options_table?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Attempts to connect a TCP socket object to a remote server or to a stream unix domain socket file without blocking.
+以非阻塞方式连接远端服务器的TCP socket对象或流式unix domain socket文件。
 
-Before actually resolving the host name and connecting to the remote backend, this method will always look up the connection pool for matched idle connections created by previous calls of this method (or the [ngx.socket.connect](#ngxsocketconnect) function).
+在真正进行域名解析和连接远端机器之前，该方法总是会先在连接池中查找与之前调用该方法（或者[ngx.socket.connect](ngxsocketconnect)函数）创建的连接相匹配的空闲连接。
 
-Both IP addresses and domain names can be specified as the `host` argument. In case of domain names, this method will use Nginx core's dynamic resolver to parse the domain name without blocking and it is required to configure the [resolver](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) directive in the `nginx.conf` file like this:
+`host`参数可以是IP地址或域名。如果是域名，该方法会使用Nginx内核中的动态域名解析服务进行非阻塞的域名解析，这需要在`nginx.conf`中配置[resolver](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) 指令。像这样：
 
 ```nginx
 
- resolver 8.8.8.8;  # use Google's public DNS nameserver
+ resolver 8.8.8.8;  # 使用谷歌的公共DNS域名服务
 ```
 
-If the nameserver returns multiple IP addresses for the host name, this method will pick up one randomly.
+如果域名服务器返回多个IP地址，该方法会随机的选取一个。
 
-In case of error, the method returns `nil` followed by a string describing the error. In case of success, the method returns `1`.
+如果发生错误，该方法返回`nil`并跟上一个错误字符串。成功返回`1`。
 
-Here is an example for connecting to a TCP server:
+以下是连接TCP服务器的例子：
 
 ```nginx
 
@@ -5919,7 +5913,7 @@ Here is an example for connecting to a TCP server:
  }
 ```
 
-Connecting to a Unix Domain Socket file is also possible:
+也可以连接Unix Domain Socket文件:
 
 ```lua
 
@@ -5931,29 +5925,29 @@ Connecting to a Unix Domain Socket file is also possible:
  end
 ```
 
-assuming memcached (or something else) is listening on the unix domain socket file `/tmp/memcached.sock`.
+以上假设memcached（或其他什么）监听的Unix Domain Socket文件`/tmp/memcached.sock`。
 
-Timeout for the connecting operation is controlled by the [lua_socket_connect_timeout](#lua_socket_connect_timeout) config directive and the [settimeout](#tcpsocksettimeout) method. And the latter takes priority. For example:
+连接的超时时间通过[lua_socket_connect_timeout](#lua_socket_connect_timeout) 配置指令和[settimeout](#tcpsocksettimeout)方法控制。后者优先级更高，例如：
 
 ```lua
 
  local sock = ngx.socket.tcp()
- sock:settimeout(1000)  -- one second timeout
+ sock:settimeout(1000)  -- 一秒超时
  local ok, err = sock:connect(host, port)
 ```
 
-It is important here to call the [settimeout](#tcpsocksettimeout) method *before* calling this method.
+这里调用该方法*之前*调用[settimeout](#tcpsocksettimeout)方法很重要。
 
-Calling this method on an already connected socket object will cause the original connection to be closed first.
+在一个已经建立连接的socket对象上调用该方法会先关闭之前的连接。
 
-An optional Lua table can be specified as the last argument to this method to specify various connect options:
+最后一个参数是一个可选的Lua table，用以指定多个连接选项：
 
 * `pool`
-	specify a custom name for the connection pool being used. If omitted, then the connection pool name will be generated from the string template `"<host>:<port>"` or `"<unix-socket-path>"`.
+    给连接池指定一个自定义名字。如果忽略，连接池的名字会是这样`"<host>:<port>"`或者`"<unix-socket-path>"`。
 
-The support for the options table argument was first introduced in the `v0.5.7` release.
+支持可选的table参数的功能最早在`v0.5.7`版本引入。
 
-This method was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v.0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6001,62 +5995,62 @@ This method was first introduced in the `v0.9.11` release.
 
 tcpsock:send
 ------------
-**syntax:** *bytes, err = tcpsock:send(data)*
+**语法:** *bytes, err = tcpsock:send(data)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**=上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Sends data without blocking on the current TCP or Unix Domain Socket connection.
+在当前TCP或Unix Domain Socket连接上以非阻塞的方式发送数据。
 
-This method is a synchronous operation that will not return until *all* the data has been flushed into the system socket send buffer or an error occurs.
+该方法是一个同步操作，也就是会等到*所有*的数据都拷贝到系统发送缓冲区或者错误发生时才会返回。
 
-In case of success, it returns the total number of bytes that have been sent. Otherwise, it returns `nil` and a string describing the error.
+如果成功，该方法返回已发送的总字节数。否则，返回`nil`和描述错误的字符串。
 
-The input argument `data` can either be a Lua string or a (nested) Lua table holding string fragments. In case of table arguments, this method will copy all the string elements piece by piece to the underlying Nginx socket send buffers, which is usually optimal than doing string concatenation operations on the Lua land.
+输入参数`data`可以是Lua字符串，也可以是存储字符串片段的（嵌套的）Lua table。如果是table参数，该方法会将table的字符串元素逐个拷贝到底层的Nginx socket发送缓冲区，这通常比字符串拼接操作高效。
 
-Timeout for the sending operation is controlled by the [lua_socket_send_timeout](#lua_socket_send_timeout) config directive and the [settimeout](#tcpsocksettimeout) method. And the latter takes priority. For example:
+发送操作的超时时间通过[lua_socket_send_timeout](#lua_socket_send_timeout)配置指令和[settimeout](#tcpsocksettimeout)方法控制。后者优先级更高，例如：
 
 ```lua
 
- sock:settimeout(1000)  -- one second timeout
+ sock:settimeout(1000)  -- 一秒超时
  local bytes, err = sock:send(request)
 ```
 
-It is important here to call the [settimeout](#tcpsocksettimeout) method *before* calling this method.
+这里调用该方法*之前*调用[settimeout](#tcpsocksettimeout)方法很重要。
 
-In case of any connection errors, this method always automatically closes the current connection.
+如果发生任何连接错误，该方法总会自动关闭当前连接。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法首次出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
 tcpsock:receive
 ---------------
-**syntax:** *data, err, partial = tcpsock:receive(size)*
+**语法:** *data, err, partial = tcpsock:receive(size)*
 
-**syntax:** *data, err, partial = tcpsock:receive(pattern?)*
+**语法:** *data, err, partial = tcpsock:receive(pattern?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Receives data from the connected socket according to the reading pattern or size.
+按照读取pattern和大小，从已连接socket上获取数据。
 
-This method is a synchronous operation just like the [send](#tcpsocksend) method and is 100% nonblocking.
+与[send](#tcpsocksend)类似，该方法属于同步非阻塞方法。
 
-In case of success, it returns the data received; in case of error, it returns `nil` with a string describing the error and the partial data received so far.
+如果成功，该方法返回获取的数据。如果失败，返回`nil`和描述错误的字符串，以及目前收到的部分数据。
 
-If a number-like argument is specified (including strings that look like numbers), then it is interpreted as a size. This method will not return until it reads exactly this size of data or an error occurs.
+如果参数是数字型（包括可以转化成数字的字符串），会被解释成`size`。该方法不会返回直到读取到指定大小数据或者发生错误。
 
-If a non-number-like string argument is specified, then it is interpreted as a "pattern". The following patterns are supported:
+如果参数是非数字类型，会被解释成`pattern`。支持以下patterns：
 
-* `'*a'`: reads from the socket until the connection is closed. No end-of-line translation is performed;
-* `'*l'`: reads a line of text from the socket. The line is terminated by a `Line Feed` (LF) character (ASCII 10), optionally preceded by a `Carriage Return` (CR) character (ASCII 13). The CR and LF characters are not included in the returned line. In fact, all CR characters are ignored by the pattern.
+* `'*a'`: 从socket读取数据知道连接关闭。不翻译行尾标记；
+* `'*l'`: 从socket读取一行文本。文本行以`LF`字符（ASCII 10）结尾，可能前面带有`CR`字符（ASCII 13）。CR和LF字符不包含在返回的文本行中。事实上，所有的CR字符都会被pattern忽略。
 
-If no argument is specified, then it is assumed to be the pattern `'*l'`, that is, the line reading pattern.
+如果不指定参数，则默认使用pattern`'*l'`，即航读取模式。
 
-Timeout for the reading operation is controlled by the [lua_socket_read_timeout](#lua_socket_read_timeout) config directive and the [settimeout](#tcpsocksettimeout) method. And the latter takes priority. For example:
+读操作的超时时间可以通过[lua_socket_read_timeout](#lua_socket_read_timeout)配置指令和[settimeout](#tcpsocksettimeout)方法控制。后者优先级更高，例如：
 
 ```lua
 
- sock:settimeout(1000)  -- one second timeout
+ sock:settimeout(1000)  -- 一秒超时
  local line, err, partial = sock:receive()
  if not line then
      ngx.say("failed to read a line: ", err)
@@ -6065,19 +6059,19 @@ Timeout for the reading operation is controlled by the [lua_socket_read_timeout]
  ngx.say("successfully read a line: ", line)
 ```
 
-It is important here to call the [settimeout](#tcpsocksettimeout) method *before* calling this method.
+这里调用该方法*之前*调用[settimeout](#tcpsocksettimeout)方法很重要。
 
-Since the `v0.8.8` release, this method no longer automatically closes the current connection when the read timeout error happens. For other connection errors, this method always automatically closes the connection.
+从`v0.8.8`版本开始，如果读取超时错误发生，该方法不再自动关闭当前连接。如果发生其他连接错误，该方法总会自动关闭当前连接。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法首次出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
 tcpsock:receiveuntil
 --------------------
-**syntax:** *iterator = tcpsock:receiveuntil(pattern, options?)*
+**语法:** *iterator = tcpsock:receiveuntil(pattern, options?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
 This method returns an iterator Lua function that can be called to read the data stream until it sees the specified pattern or an error occurs.
 
@@ -6174,17 +6168,17 @@ This method was first introduced in the `v0.5.0rc1` release.
 
 tcpsock:close
 -------------
-**syntax:** *ok, err = tcpsock:close()*
+**语法:** *ok, err = tcpsock:close()*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Closes the current TCP or stream unix domain socket. It returns the `1` in case of success and returns `nil` with a string describing the error otherwise.
+关闭当前的TCP或流式Unix Domain Socket。如果成功返回`1`；如果失败返回`nil`和描述错误的字符串。
 
-Note that there is no need to call this method on socket objects that have invoked the [setkeepalive](#tcpsocksetkeepalive) method because the socket object is already closed (and the current connection is saved into the built-in connection pool).
+注意，如果在socket对象上调用了[setkeepalive](#tcpsocksetkeepalive)方法，那么不需要在socket对象上调用该方法，因为socket对象已经关闭（并且，当前连接被保存在了内建的连接池中）。
 
-Socket objects that have not invoked this method (and associated connections) will be closed when the socket object is released by the Lua GC (Garbage Collector) or the current client HTTP request finishes processing.
+没有调用该方法的socket对象（和关联的连接）会在Lua GC释放socket对象或当前的HTTP请求完成处理时被关闭。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6260,13 +6254,13 @@ This feature was first introduced in the `v0.5.0rc1` release.
 
 ngx.socket.connect
 ------------------
-**syntax:** *tcpsock, err = ngx.socket.connect(host, port)*
+**语法:** *tcpsock, err = ngx.socket.connect(host, port)*
 
-**syntax:** *tcpsock, err = ngx.socket.connect("unix:/path/to/unix-domain.socket")*
+**语法:** *tcpsock, err = ngx.socket.connect("unix:/path/to/unix-domain.socket")*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-This function is a shortcut for combining [ngx.socket.tcp()](#ngxsockettcp) and the [connect()](#tcpsockconnect) method call in a single operation. It is actually implemented like this:
+该方法相当于同时调用[ngx.socket.tcp()](#ngxsockettcp)和[connect()](#tcpsockconnect)。实现上像下面这样：
 
 ```lua
 
@@ -6278,9 +6272,9 @@ This function is a shortcut for combining [ngx.socket.tcp()](#ngxsockettcp) and 
  return sock
 ```
 
-There is no way to use the [settimeout](#tcpsocksettimeout) method to specify connecting timeout for this method and the [lua_socket_connect_timeout](#lua_socket_connect_timeout) directive must be set at configure time instead.
+该方法不能使用[settimeout](#tcpsocksettimeout)方法设置连接超时时间，只能使用[lua_socket_connect_timeout](#lua_socket_connect_timeout)指令配置超时时间。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
