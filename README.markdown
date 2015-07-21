@@ -6073,9 +6073,9 @@ tcpsock:receiveuntil
 
 **上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-This method returns an iterator Lua function that can be called to read the data stream until it sees the specified pattern or an error occurs.
+该函数返回一个迭代器函数，用于读取数据流直到读到特定pattern或发生错误。
 
-Here is an example for using this method to read a data stream with the boundary sequence `--abcedhb`:
+下面是使用该方法读取数据流的例子（以`--abcedhb`结束）：
 
 ```lua
 
@@ -6087,13 +6087,13 @@ Here is an example for using this method to read a data stream with the boundary
  ngx.say("read the data stream: ", data)
 ```
 
-When called without any argument, the iterator function returns the received data right *before* the specified pattern string in the incoming data stream. So for the example above, if the incoming data stream is `'hello, world! -agentzh\r\n--abcedhb blah blah'`, then the string `'hello, world! -agentzh'` will be returned.
+如果不带任何参数，迭代器函数会返回在数据流中指定pattern之前的部分。还是上面的例子，如果数据流是`'hello, world! -agentzh\r\n--abcedhb blah blah'`，那么返回的字符串是`'hello, world! -agentzh'`。
 
-In case of error, the iterator function will return `nil` along with a string describing the error and the partial data bytes that have been read so far.
+如果发生错误，迭代器函数会返回`nil`和一个错误描述字符串以及到目前为止已经收到的数据。
 
-The iterator function can be called multiple times and can be mixed safely with other cosocket method calls or other iterator function calls.
+迭代器函数可以被调用多次，也可以与其他cosocket方法或其他迭代器方法混合使用。
 
-The iterator function behaves differently (i.e., like a real iterator) when it is called with a `size` argument. That is, it will read that `size` of data on each invocation and will return `nil` at the last invocation (either sees the boundary pattern or meets an error). For the last successful invocation of the iterator function, the `err` return value will be `nil` too. The iterator function will be reset after the last successful invocation that returns `nil` data and `nil` error. Consider the following example:
+当调用时带有`size`参数时，迭代器函数的行为稍有不同。具体地说就是，它的每次调用只读取指定大小的数据，直到最后一次调用返回`nil`（或者读到边界pattern，或者发生错误）。对于最后一次成功的迭代器调用来说，`err`也会返回`nil`。迭代器函数在最后一次成功调用返回`nil`数据和`nil`错误后会被重置。看下面的例子：
 
 ```lua
 
@@ -6114,8 +6114,7 @@ The iterator function behaves differently (i.e., like a real iterator) when it i
  end
 ```
 
-Then for the incoming data stream `'hello, world! -agentzh\r\n--abcedhb blah blah'`, we shall get the following output from the sample code above:
-
+对于输入数据`'hello, world! -agentzh\r\n--abcedhb blah blah'`，上面的程序会得到下面的输出：
 
     read chunk: [hell]
     read chunk: [o, w]
@@ -6126,15 +6125,15 @@ Then for the incoming data stream `'hello, world! -agentzh\r\n--abcedhb blah bla
     read done
 
 
-Note that, the actual data returned *might* be a little longer than the size limit specified by the `size` argument when the boundary pattern has ambiguity for streaming parsing. Near the boundary of the data stream, the data string actually returned could also be shorter than the size limit.
+注意，当边界pattern存在二义性时，实际返回的数据可能比指定`size`大小的数据稍长一点。在数据流边界处，实际返回的数据字符串也可能比指定大小短。
 
-Timeout for the iterator function's reading operation is controlled by the [lua_socket_read_timeout](#lua_socket_read_timeout) config directive and the [settimeout](#tcpsocksettimeout) method. And the latter takes priority. For example:
+迭代器函数的读操作超时时间通过[lua_socket_read_timeout](#lua_socket_read_timeout)配置指令和[settimeout](#tcpsocksettimeout)方法控制。后者优先级更高，例如：
 
 ```lua
 
  local readline = sock:receiveuntil("\r\n")
 
- sock:settimeout(1000)  -- one second timeout
+ sock:settimeout(1000)  -- 一秒超时
  line, err, partial = readline()
  if not line then
      ngx.say("failed to read a line: ", err)
@@ -6143,13 +6142,13 @@ Timeout for the iterator function's reading operation is controlled by the [lua_
  ngx.say("successfully read a line: ", line)
 ```
 
-It is important here to call the [settimeout](#tcpsocksettimeout) method *before* calling the iterator function (note that the `receiveuntil` call is irrelevant here).
+请在调用迭代器函数之前调用[settimeout](#tcpsocksettimeout)设置超时（这与调用`receiveuntil`不相关）。
 
-As from the `v0.5.1` release, this method also takes an optional `options` table argument to control the behavior. The following options are supported:
+从`v0.5.1`版本开始，该方法可以带有可选参数`options`，用于行为控制。以下是支持的选项：
 
 * `inclusive`
 
-The `inclusive` takes a boolean value to control whether to include the pattern string in the returned data string. Default to `false`. For example,
+`inclusive`是一个布尔值，用以控制在返回的数据中是否包含pattern字符串。默认为`false`。例如：
 
 ```lua
 
@@ -6158,11 +6157,11 @@ The `inclusive` takes a boolean value to control whether to include the pattern 
  ngx.say(data)
 ```
 
-Then for the input data stream `"hello world _END_ blah blah blah"`, then the example above will output `hello world _END_`, including the pattern string `_END_` itself.
+对于输入字符串`"hello world _END_ blah blah blah"`，上面的程序会输出`hello world _END_`，包含pattern字符串`_END_`本身。
 
-Since the `v0.8.8` release, this method no longer automatically closes the current connection when the read timeout error happens. For other connection errors, this method always automatically closes the connection.
+从`v0.8.8`版本开始，当读取超时时，该方法不再自动关闭当前连接。对于其他错误，该方法总是自动关闭连接。
 
-This method was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6184,17 +6183,17 @@ tcpsock:close
 
 tcpsock:settimeout
 ------------------
-**syntax:** *tcpsock:settimeout(time)*
+**语法:** *tcpsock:settimeout(time)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Set the timeout value in milliseconds for subsequent socket operations ([connect](#tcpsockconnect), [receive](#tcpsockreceive), and iterators returned from [receiveuntil](#tcpsockreceiveuntil)).
+对后续的socket操作（[connect](#tcpsockconnect)，[receive](#tcpsockreceive)和从[receiveuntil](#tcpsockreceiveuntil)返回的迭代器）设置超时时间（单位毫秒）。
 
-Settings done by this method takes priority over those config directives, i.e., [lua_socket_connect_timeout](#lua_socket_connect_timeout), [lua_socket_send_timeout](#lua_socket_send_timeout), and [lua_socket_read_timeout](#lua_socket_read_timeout).
+该方法设置的超时优先级高于其他配置指令，如[lua_socket_connect_timeout](#lua_socket_connect_timeout)，[lua_socket_send_timeout](#lua_socket_send_timeout)，和[lua_socket_read_timeout](#lua_socket_read_timeout)等。
 
-Note that this method does *not* affect the [lua_socket_keepalive_timeout](#lua_socket_keepalive_timeout) setting; the `timeout` argument to the [setkeepalive](#tcpsocksetkeepalive) method should be used for this purpose instead.
+注意，该方法不影响[lua_socket_keepalive_timeout](#lua_socket_keepalive_timeout)设置，如果要设置keepalive超时，请使用[setkeepalive](#tcpsocksetkeepalive)方法。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6212,29 +6211,31 @@ This feature was first introduced in the `v0.5.0rc1` release.
 
 tcpsock:setkeepalive
 --------------------
-**syntax:** *ok, err = tcpsock:setkeepalive(timeout?, size?)*
+**语法:** *ok, err = tcpsock:setkeepalive(timeout?, size?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Puts the current socket's connection immediately into the cosocket built-in connection pool and keep it alive until other [connect](#tcpsockconnect) method calls request it or the associated maximal idle timeout is expired.
+将当前的socket连接立即放入cosocket内建的连接池，并保持活动连接，直到其他的请求调用[connect](#tcpsockconnect)方法或者对应的空闲过期时间到达。
 
-The first optional argument, `timeout`, can be used to specify the maximal idle timeout (in milliseconds) for the current connection. If omitted, the default setting in the [lua_socket_keepalive_timeout](#lua_socket_keepalive_timeout) config directive will be used. If the `0` value is given, then the timeout interval is unlimited.
+第一个可选参数`timeout`用于指定当前连接的最大空闲时间（单位毫秒）。如果没指定，使用[lua_socket_keepalive_timeout](#lua_socket_keepalive_timeout)配置指令的默认配置时间。如果指定为`0`，则表示永不超时。
 
-The second optional argument, `size`, can be used to specify the maximal number of connections allowed in the connection pool for the current server (i.e., the current host-port pair or the unix domain socket file path). Note that the size of the connection pool cannot be changed once the pool is created. When this argument is omitted, the default setting in the [lua_socket_pool_size](#lua_socket_pool_size) config directive will be used.
+第二个可选参数`size`用于指定当前server的连接池内允许的最大连接数。注意，连接池的大小一旦在连接池创建后不能改变。如果没有指定该参数，使用[lua_socket_pool_size](#lua_socket_pool_size)的默认配置。
 
-When the connection pool exceeds the available size limit, the least recently used (idle) connection already in the pool will be closed to make room for the current connection.
+如果连接池超过大小限制，通过LRU的剔除策略为当前连接腾出空间。
 
-Note that the cosocket connection pool is per Nginx worker process rather than per Nginx server instance, so the size limit specified here also applies to every single Nginx worker process.
+注意，cosocket连接池是针对每个Nginx工作进程的，而不是对每个Nginx server实例的，因此，此处指定的大小限制适用于单个Nginx工作进程。
 
-Idle connections in the pool will be monitored for any exceptional events like connection abortion or unexpected incoming data on the line, in which cases the connection in question will be closed and removed from the pool.
+连接池中空闲连接的任何异常事件都会被监控到，这里的异常事件包括连接断开，异常数据等，发生异常事件后，对应的异常连接会被自动关闭，并被移出连接池。
 
-In case of success, this method returns `1`; otherwise, it returns `nil` and a string describing the error.
+调用成功，程序返回`1`；否则，返回`nil`和一个错误描述字符串。
+
+
 
 When the system receive buffer for the current connection has unread data, then this method will return the "connection in dubious state" error message (as the second return value) because the previous session has unread data left behind for the next session and the connection is not safe to be reused.
 
 This method also makes the current cosocket object enter the "closed" state, so there is no need to manually call the [close](#tcpsockclose) method on it afterwards.
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6248,7 +6249,7 @@ This method returns the (successfully) reused times for the current connection. 
 
 If the current connection does not come from the built-in connection pool, then this method always returns `0`, that is, the connection has never been reused (yet). If the connection comes from the connection pool, then the return value is always non-zero. So this method can also be used to determine if the current connection comes from the pool.
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该方法最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
