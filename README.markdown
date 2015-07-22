@@ -4957,28 +4957,31 @@ Returns `true` if the current request is an nginx subrequest, or `false` otherwi
 
 ngx.re.match
 ------------
-**syntax:** *captures, err = ngx.re.match(subject, regex, options?, ctx?, res_table?)*
+**语法:** *captures, err = ngx.re.match(subject, regex, options?, ctx?, res_table?)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua\*, set_by_lua\*, rewrite_by_lua\*, access_by_lua\*, content_by_lua\*, header_filter_by_lua\*, body_filter_by_lua\*, log_by_lua\*, ngx.timer.\**
 
-Matches the `subject` string using the Perl compatible regular expression `regex` with the optional `options`.
+根据`options`，使用PCRE `regex`正则匹配目标字符串`subject`。
 
-Only the first occurrence of the match is returned, or `nil` if no match is found. In case of errors, like seeing a bad regular expression or exceeding the PCRE stack limit, `nil` and a string describing the error will be returned.
+只有返回第一个被匹配的串，或者没有匹配串返回`nil`。如果遇到错误，比如给出错误的正则表达式或超出PCRE栈限制等，返回`nil`和错误描述字符串。
 
-When a match is found, a Lua table `captures` is returned, where `captures[0]` holds the whole substring being matched, and `captures[1]` holds the first parenthesized sub-pattern's capturing, `captures[2]` the second, and so on.
+当有匹配找到，返回Lua table类型`captures`，其中，`capture[0]`包含整个匹配的子串，`capture[1]`包含第一个括号括起来的匹配捕获串，`capture[2]`第二个，依次类推。
 
 ```lua
 
  local m, err = ngx.re.match("hello, 1234", "[0-9]+")
  if m then
+     -- 匹配
      -- m[0] == "1234"
 
  else
      if err then
+         -- 遇到错误
          ngx.log(ngx.ERR, "error: ", err)
          return
      end
 
+     -- 没有匹配
      ngx.say("match not found")
  end
 ```
@@ -4990,8 +4993,7 @@ When a match is found, a Lua table `captures` is returned, where `captures[0]` h
  -- m[1] == "1"
 ```
 
-Named captures are also supported since the `v0.7.14` release
-and are returned in the same Lua table as key-value pairs as the numbered captures.
+从`v0.7.14`版本开始支持具名捕获，同样以key-value的形式返回相同的Lua table。
 
 ```lua
 
@@ -5002,7 +5004,7 @@ and are returned in the same Lua table as key-value pairs as the numbered captur
  -- m["remaining"] == "234"
 ```
 
-Unmatched subpatterns will have `nil` values in their `captures` table fields.
+未匹配的子模式会在对应的capture表中返回`nil`。
 
 ```lua
 
@@ -5014,14 +5016,13 @@ Unmatched subpatterns will have `nil` values in their `captures` table fields.
  -- m["named"] == nil
 ```
 
-Specify `options` to control how the match operation will be performed. The following option characters are supported:
+`options`用于控制如何执行匹配操作。支持以下选项：
 
 
-    a             anchored mode (only match from the beginning)
+    a             锚定模式（仅从头匹配）
 
-    d             enable the DFA mode (or the longest token match semantics).
-                  this requires PCRE 6.0+ or else a Lua exception will be thrown.
-                  first introduced in ngx_lua v0.3.1rc30.
+    d             开启DFA模式（或最长token匹配语义），
+                  这要求PCRE6.0+，否则抛出Lua异常。首次出现在v0.3.1rc30。
 
     D             enable duplicate named pattern support. This allows named
                   subpattern names to be repeated, returning the captures in
@@ -5115,9 +5116,9 @@ This feature was introduced in the `v0.2.1rc11` release.
 
 ngx.re.find
 -----------
-**syntax:** *from, to, err = ngx.re.find(subject, regex, options?, ctx?, nth?)*
+**语法:** *from, to, err = ngx.re.find(subject, regex, options?, ctx?, nth?)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua\*, set_by_lua\*, rewrite_by_lua\*, access_by_lua\*, content_by_lua\*, header_filter_by_lua\*, body_filter_by_lua\*, log_by_lua\*, ngx.timer.\**
 
 Similar to [ngx.re.match](#ngxrematch) but only returns the begining index (`from`) and end index (`to`) of the matched substring. The returned indexes are 1-based and can be fed directly into the [string.sub](http://www.lua.org/manual/5.1/manual.html#pdf-string.sub) API function to obtain the matched substring.
 
@@ -5169,9 +5170,9 @@ This API function was first introduced in the `v0.9.2` release.
 
 ngx.re.gmatch
 -------------
-**syntax:** *iterator, err = ngx.re.gmatch(subject, regex, options?)*
+**语法:** *iterator, err = ngx.re.gmatch(subject, regex, options?)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua\*, set_by_lua*\, rewrite_by_lua\*, access_by_lua\*, content_by_lua\*, header_filter_by_lua\*, body_filter_by_lua\*, log_by_lua\*, ngx.timer.\**
 
 Similar to [ngx.re.match](#ngxrematch), but returns a Lua iterator instead, so as to let the user programmer iterate all the matches over the `<subject>` string argument with the PCRE `regex`.
 
@@ -5247,9 +5248,9 @@ This feature was first introduced in the `v0.2.1rc12` release.
 
 ngx.re.sub
 ----------
-**syntax:** *newstr, n, err = ngx.re.sub(subject, regex, replace, options?)*
+**语法:** *newstr, n, err = ngx.re.sub(subject, regex, replace, options?)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua*, set_by_lua, rewrite_by_lua, access_by_lua, content_by_lua, header_filter_by_lua, body_filter_by_lua, log_by_lua, ngx.timer.*
 
 Substitutes the first match of the Perl compatible regular expression `regex` on the `subject` argument string with the string or function argument `replace`. The optional `options` argument has exactly the same meaning as in [ngx.re.match](#ngxrematch).
 
@@ -5313,9 +5314,9 @@ This feature was first introduced in the `v0.2.1rc13` release.
 
 ngx.re.gsub
 -----------
-**syntax:** *newstr, n, err = ngx.re.gsub(subject, regex, replace, options?)*
+**语法:** *newstr, n, err = ngx.re.gsub(subject, regex, replace, options?)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua, set_by_lua, rewrite_by_lua, access_by_lua, content_by_lua, header_filter_by_lua, body_filter_by_lua, log_by_lua, ngx.timer.*
 
 Just like [ngx.re.sub](#ngxresub), but does global substitution.
 
