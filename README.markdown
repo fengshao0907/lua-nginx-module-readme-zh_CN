@@ -6229,11 +6229,9 @@ tcpsock:setkeepalive
 
 调用成功，程序返回`1`；否则，返回`nil`和一个错误描述字符串。
 
+当当前连接的接收缓冲区有未读数据时，该方法会返回"connection in dubious state"的错误信息（第二个返回值），因为之前的会话存在未读数据没有被读取，重用该连接是不安全的。
 
-
-When the system receive buffer for the current connection has unread data, then this method will return the "connection in dubious state" error message (as the second return value) because the previous session has unread data left behind for the next session and the connection is not safe to be reused.
-
-This method also makes the current cosocket object enter the "closed" state, so there is no need to manually call the [close](#tcpsockclose) method on it afterwards.
+该方法会使当前的cosocket对象进入”closed“状态，所以不需要手动调用[close](#tcpsockclose)关闭连接。
 
 该方法最早出现在`v0.5.0rc1`版本。
 
@@ -6241,13 +6239,13 @@ This method also makes the current cosocket object enter the "closed" state, so 
 
 tcpsock:getreusedtimes
 ----------------------
-**syntax:** *count, err = tcpsock:getreusedtimes()*
+**语法:** *count, err = tcpsock:getreusedtimes()*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-This method returns the (successfully) reused times for the current connection. In case of error, it returns `nil` and a string describing the error.
+该方法调用成功时返回当前连接的重用次数。发生错误时，返回`nil`和一个错误描述字符串。
 
-If the current connection does not come from the built-in connection pool, then this method always returns `0`, that is, the connection has never been reused (yet). If the connection comes from the connection pool, then the return value is always non-zero. So this method can also be used to determine if the current connection comes from the pool.
+如果当前连接不是来源于内建的连接池，该方法总是返回`0`，也就是连接不会被重用。如果连接来自连接池，那么返回值总是非零值。所以，该方法也可以用于确定该连接是否来自连接池。
 
 该方法最早出现在`v0.5.0rc1`版本。
 
@@ -6281,85 +6279,84 @@ ngx.socket.connect
 
 ngx.get_phase
 -------------
-**syntax:** *str = ngx.get_phase()*
+**语法:** *str = ngx.get_phase()*
 
-**context:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
-Retrieves the current running phase name. Possible return values are
+获取当前的执行阶段。可能的返回值包括：
 
 * `init`
-	for the context of [init_by_lua](#init_by_lua) or [init_by_lua_file](#init_by_lua_file).
+	用于[init_by_lua](#init_by_lua)和[init_by_lua_file](#init_by_lua_file)上下文。
 * `init_worker`
-	for the context of [init_worker_by_lua](#init_worker_by_lua) or [init_worker_by_lua_file](#init_worker_by_lua_file).
+	用于[init_worker_by_lua](#init_worker_by_lua)和[init_worker_by_lua_file](#init_worker_by_lua_file)上下文。
 * `set`
-	for the context of [set_by_lua](#set_by_lua) or [set_by_lua_file](#set_by_lua_file).
+	用于[set_by_lua](#set_by_lua) or [set_by_lua_file](#set_by_lua_file).
 * `rewrite`
-	for the context of [rewrite_by_lua](#rewrite_by_lua) or [rewrite_by_lua_file](#rewrite_by_lua_file).
+	用于[rewrite_by_lua](#rewrite_by_lua)和[rewrite_by_lua_file](#rewrite_by_lua_file)上下文。
 * `access`
-	for the context of [access_by_lua](#access_by_lua) or [access_by_lua_file](#access_by_lua_file).
+	用于[access_by_lua](#access_by_lua)和[access_by_lua_file](#access_by_lua_file)上下文。
 * `content`
-	for the context of [content_by_lua](#content_by_lua) or [content_by_lua_file](#content_by_lua_file).
+	用于[content_by_lua](#content_by_lua)和[content_by_lua_file](#content_by_lua_file)上下文。
 * `header_filter`
-	for the context of [header_filter_by_lua](#header_filter_by_lua) or [header_filter_by_lua_file](#header_filter_by_lua_file).
+	用于[header_filter_by_lua](#header_filter_by_lua)和[header_filter_by_lua_file](#header_filter_by_lua_file)上下文。
 * `body_filter`
-	for the context of [body_filter_by_lua](#body_filter_by_lua) or [body_filter_by_lua_file](#body_filter_by_lua_file).
+	用于[body_filter_by_lua](#body_filter_by_lua)和[body_filter_by_lua_file](#body_filter_by_lua_file)上下文。
 * `log`
-	for the context of [log_by_lua](#log_by_lua) or [log_by_lua_file](#log_by_lua_file).
+	用于[log_by_lua](#log_by_lua)和[log_by_lua_file](#log_by_lua_file)上下文。
 * `timer`
-	for the context of user callback functions for [ngx.timer.*](#ngxtimerat).
+	用于[ngx.timer.*](#ngxtimerat)用户回调函数。
 
-This API was first introduced in the `v0.5.10` release.
+该API最早出现与`v0.5.10`版本。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.thread.spawn
 ----------------
-**syntax:** *co = ngx.thread.spawn(func, arg1, arg2, ...)*
+**语法:** *co = ngx.thread.spawn(func, arg1, arg2, ...)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Spawns a new user "light thread" with the Lua function `func` as well as those optional arguments `arg1`, `arg2`, and etc. Returns a Lua thread (or Lua coroutine) object represents this "light thread".
+生成一个新的用户“新线程“，带有Lua函数`func`和可选参数`arg1`，`arg2`等，返回表示该”轻线程“的Lua线程或Lua协程。
 
-"Light threads" are just a special kind of Lua coroutines that are scheduled by the ngx_lua module.
+”轻线程“只是一种特殊类型的Lua协程，由ngx_lua模块调度。
 
-Before `ngx.thread.spawn` returns, the `func` will be called with those optional arguments until it returns, aborts with an error, or gets yielded due to I/O operations via the [Nginx API for Lua](#nginx-api-for-lua) (like [tcpsock:receive](#tcpsockreceive)).
+在`ngx.thread.spawn`返回之前，带有可选参数的`func`会被调用直到返回、遇到错误退出或者由于IO操作经由[Nginx API for Lua](#nginx-api-for-lua)（如[tcpsock:receive](#tcpsockreceive)）暂停执行。
 
-After `ngx.thread.spawn` returns, the newly-created "light thread" will keep running asynchronously usually at various I/O events.
+在`ngx.thread.spawn`返回之后，新创建的”轻线程“通常会在多个IO事件中保持异步运行。
 
-All the Lua code chunks running by [rewrite_by_lua](#rewrite_by_lua), [access_by_lua](#access_by_lua), and [content_by_lua](#content_by_lua) are in a boilerplate "light thread" created automatically by ngx_lua. Such boilerplate "light thread" are also called "entry threads".
+由[rewrite_by_lua](#rewrite_by_lua)、[access_by_lua](#access_by_lua)和[content_by_lua](#content_by_lua)运行的所有lua代码块会在模板”轻线程“中由ngx_lua统一自动创建。该模板”轻线程“又叫”入口线程“。
 
-By default, the corresponding Nginx handler (e.g., [rewrite_by_lua](#rewrite_by_lua) handler) will not terminate until
+默认情况下，对应的Nginx处理函数（如[rewrite_by_lua](#rewrite_by_lua)处理函数）不会终止，直到
 
-1. both the "entry thread" and all the user "light threads" terminates,
-1. a "light thread" (either the "entry thread" or a user "light thread" aborts by calling [ngx.exit](#ngxexit), [ngx.exec](#ngxexec), [ngx.redirect](#ngxredirect), or [ngx.req.set_uri(uri, true)](#ngxreqset_uri), or
-1. the "entry thread" terminates with a Lua error.
+1. ”入口线程“和所有的用户”轻线程“都终止了；
+2. "轻线程"（”入口线程“或用户“轻线程”）通过调用[ngx.exit](#ngxexit), [ngx.exec](#ngxexec), [ngx.redirect](#ngxredirect)或[ngx.req.set_uri(uri, true)](#ngxreqset_uri)退出；
+3. “入口线程”遇到Lua错误终止。
 
-When the user "light thread" terminates with a Lua error, however, it will not abort other running "light threads" like the "entry thread" does.
+如果用户“轻线程”遇到Lua错误终止，这不会使其他正在运行的“轻线程”（如“入口线程”）终止。
 
-Due to the limitation in the Nginx subrequest model, it is not allowed to abort a running Nginx subrequest in general. So it is also prohibited to abort a running "light thread" that is pending on one ore more Nginx subrequests. You must call [ngx.thread.wait](#ngxthreadwait) to wait for those "light thread" to terminate before quitting the "world". A notable exception here is that you can abort pending subrequests by calling [ngx.exit](#ngxexit) with and only with the status code `ngx.ERROR` (-1), `408`, `444`, or `499`.
+由于Nginx子请求模型的限制，通常不允许退出正在运行的子请求。所以，退出一个正在运行的等待一个或多个子请求的“轻线程”的做法也是被禁止的。在退出之前，你必须调用[ngx.thread.wait](#ngxthreadwait)等待这些“轻线程”退出。一个例外是，你可以通过调用带有，而且只能带有，`ngx.ERRER`(-1)、`408`、`444`或`499`状态码的[ngx.exit](#ngxexit)来退出等待中的子请求。
 
-The "light threads" are not scheduled in a pre-emptive way. In other words, no time-slicing is performed automatically. A "light thread" will keep running exclusively on the CPU until
+“轻线程”并不是以抢占的方式进行调度。换句话说，并没有时间片的轮转。“轻线程”会独占CPU保持运行，直到
 
-1. a (nonblocking) I/O operation cannot be completed in a single run,
-1. it calls [coroutine.yield](#coroutineyield) to actively give up execution, or
-1. it is aborted by a Lua error or an invocation of [ngx.exit](#ngxexit), [ngx.exec](#ngxexec), [ngx.redirect](#ngxredirect), or [ngx.req.set_uri(uri, true)](#ngxreqset_uri).
+1. （非阻塞的）IO操作不能在一次运行中完成；
+2. 调用[coroutine.yield](#coroutineyield)主动放弃运行；
+3. 发生错误或调用[ngx.exit](#ngxexit), [ngx.exec](#ngxexec), [ngx.redirect](#ngxredirect)或[ngx.req.set_uri(uri, true)](#ngxreqset_uri)退出。
 
-For the first two cases, the "light thread" will usually be resumed later by the ngx_lua scheduler unless a "stop-the-world" event happens.
+对于前两个条件，“轻线程”通常会在之后被ngx_lua的调度器重新执行，除非整个程序退出的事件发生。
 
-User "light threads" can create "light threads" themselves. And normal user coroutines created by [coroutine.create](#coroutinecreate) can also create "light threads". The coroutine (be it a normal Lua coroutine or a "light thread") that directly spawns the "light thread" is called the "parent coroutine" for the "light thread" newly spawned.
+用户“轻线程“可以自己曾经”轻线程“。[coroutine.create](#coroutinecreate)创建的普通用户协程也可以创建”轻线程“。创建“轻线程”的协程称为“父协程”。
 
-The "parent coroutine" can call [ngx.thread.wait](#ngxthreadwait) to wait on the termination of its child "light thread".
+“父协程”可以调用[ngx.thread.wait](#ngxthreadwait)等待它的子“轻线程”退出。
 
-You can call coroutine.status() and coroutine.yield() on the "light thread" coroutines.
+你可以在”子轻线程“上调用coroutine.status()和coroutine。yield()。
 
-The status of the "light thread" coroutine can be "zombie" if
+”轻线程“协程的状态可能为”zombie“，如果
 
-1. the current "light thread" already terminates (either successfully or with an error),
-1. its parent coroutine is still alive, and
-1. its parent coroutine is not waiting on it with [ngx.thread.wait](#ngxthreadwait).
+1. 当前”轻线程“已经退出（或成功或失败）；
+2. 它的父协程仍处于活跃状态；
+3. 它的父协程没有使用[ngx.thread.wait](#ngxthreadwait)等待。
 
-The following example demonstrates the use of coroutine.yield() in the "light thread" coroutines
-to do manual time-slicing:
+下面的例子展示了在”轻线程“协程中使用coroutine.yield()做人工时间片：
 
 ```lua
 
@@ -6390,7 +6387,7 @@ to do manual time-slicing:
  ngx.say("4")
 ```
 
-Then it will generate the output
+产生如下输出：
 
 
     0
@@ -6403,13 +6400,12 @@ Then it will generate the output
     4
 
 
-"Light threads" are mostly useful for doing concurrent upstream requests in a single Nginx request handler, kinda like a generalized version of [ngx.location.capture_multi](#ngxlocationcapture_multi) that can work with all the [Nginx API for Lua](#nginx-api-for-lua). The following example demonstrates parallel requests to MySQL, Memcached, and upstream HTTP services in a single Lua handler, and outputting the results in the order that they actually return (very much like the Facebook BigPipe model):
+”轻线程“最常用于在单个Nginx请求处理函数中并发处理上游请求，好似一个通用版的[ngx.location.capture_multi](#ngxlocationcapture_multi)，可以跟所有的[Nginx API for Lua](#nginx-api-for-lua)协同工作。下面的例子展示了在单个Lua处理函数中并发请求MYSQL，Memcached和上游HTTP服务，并顺序输出结果（很像Facebook的BigPipe模型）：
 
 ```lua
 
- -- query mysql, memcached, and a remote http service at the same time,
- -- output the results in the order that they
- -- actually return the results.
+ -- 同时查询mysql、memcached和远端http服务，
+ -- 并按它们结果返回的顺序依次输出结果。
 
  local mysql = require "resty.mysql"
  local memcached = require "resty.memcached"
@@ -6441,12 +6437,12 @@ Then it will generate the output
      ngx.say("http done: ", res.body)
  end
 
- ngx.thread.spawn(query_mysql)      -- create thread 1
- ngx.thread.spawn(query_memcached)  -- create thread 2
- ngx.thread.spawn(query_http)       -- create thread 3
+ ngx.thread.spawn(query_mysql)      -- 创建轻线程1
+ ngx.thread.spawn(query_memcached)  -- 创建轻线程2
+ ngx.thread.spawn(query_http)       -- 创建轻线程3
 ```
 
-This API was first enabled in the `v0.7.0` release.
+该API最早在`v0.7.0`版本可用。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6555,15 +6551,15 @@ ngx.thread.wait
 
 ngx.thread.kill
 ---------------
-**syntax:** *ok, err = ngx.thread.kill(thread)*
+**语法:** *ok, err = ngx.thread.kill(thread)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Kills a running "light thread" created by [ngx.thread.spawn](#ngxthreadspawn). Returns a true value when successful or `nil` and a string describing the error otherwise.
+杀死[ngx.thread.spawn](#ngxthreadspawn)创建的正在运行的”轻线程“。成功返回true，否则返回`nil`和一个错误描述字符串。
 
-According to the current implementation, only the parent coroutine (or "light thread") can kill a thread. Also, a running "light thread" with pending NGINX subrequests (initiated by [ngx.location.capture](#ngxlocationcapture) for example) cannot be killed due to a limitation in the NGINX core.
+根据当前的实现，只有父协程（或者父“轻线程”）可以杀死线程。同样，由于Nginx内核的限制，一个正在运行的发起Nginx子请求（由[ngx.location.capture](#ngxlocationcapture)发起）的“轻线程”不能被杀死。
 
-This API was first enabled in the `v0.9.9` release.
+该API最早在`v0.9.0`版本可用。
 
 [回到目录](#nginx-api-for-lua)
 
