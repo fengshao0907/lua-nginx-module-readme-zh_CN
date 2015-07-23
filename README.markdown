@@ -4959,7 +4959,7 @@ ngx.re.match
 ------------
 **语法:** *captures, err = ngx.re.match(subject, regex, options?, ctx?, res_table?)*
 
-**上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua\*, set_by_lua\*, rewrite_by_lua\*, access_by_lua\*, content_by_lua\*, header_filter_by_lua\*, body_filter_by_lua\*, log_by_lua\*, ngx.timer.\**
 
 根据`options`，使用PCRE `regex`正则匹配目标字符串`subject`。
 
@@ -5022,46 +5022,41 @@ ngx.re.match
     a             锚定模式（仅从头匹配）
 
     d             开启DFA模式（或最长token匹配语义），
-                  这要求PCRE6.0+，否则抛出Lua异常。首次出现在v0.3.1rc30。
+                  这要求PCRE6.0+，否则抛出Lua异常。首次出现在v0.3.1rc30
 
-    D             enable duplicate named pattern support. This allows named
-                  subpattern names to be repeated, returning the captures in
-                  an array-like Lua table. for example,
+    D             开启可重复具名模式。这允许具名模式可以重复使用，
+                  在Lua table中返回捕获。例如：
                     local m = ngx.re.match("hello, world",
                                            "(?<named>\w+), (?<named>\w+)",
                                            "D")
                     -- m["named"] == {"hello", "world"}
-                  this option was first introduced in the v0.7.14 release.
-                  this option requires at least PCRE 8.12.
+                  该选项首次出现在v0.7.14版本。该选项要求PCRE在8.12以上
 
-    i             case insensitive mode (similar to Perl's /i modifier)
+    i             大小写不敏感模式（类似于Perl中的/i修饰符）
 
-    j             enable PCRE JIT compilation, this requires PCRE 8.21+ which
-                  must be built with the --enable-jit option. for optimum performance,
-                  this option should always be used together with the 'o' option.
-                  first introduced in ngx_lua v0.3.1rc30.
+    j             开启PCRE JIT编译，该选项要求PCRE在8.21以上，并且使用
+                  --enable-jit创建。为了性能考虑，该选项应该总是和'o'选项一起使用。该选项最早出现在ngx_lua v0.3.1rc30中
 
-    J             enable the PCRE Javascript compatible mode. this option was
-                  first introduced in the v0.7.14 release. this option requires
-                  at least PCRE 8.12.
+    J             开启PCRE js兼容模式。该选项最早出现在v0.7.14版本，
+                  并且要求PCRE在8.12以上
 
-    m             multi-line mode (similar to Perl's /m modifier)
+    m             多行模式（类似于Perl中的/m修饰符）
 
-    o             compile-once mode (similar to Perl's /o modifier),
-                  to enable the worker-process-level compiled-regex cache
+    o             一次编译模式（类似于Perl中的/o修饰符），
+                  开启工作进程级别的正则编译缓存
 
-    s             single-line mode (similar to Perl's /s modifier)
+    s             单行模式（类似于Perl中的/s修饰符）
 
-    u             UTF-8 mode. this requires PCRE to be built with
-                  the --enable-utf8 option or else a Lua exception will be thrown.
+    u             UTF-8模式。该选项要求PCRE库使用--enable-utf8选项创建，
+                  否则会抛出Lua异常
 
-    U             similar to "u" but disables PCRE's UTF-8 validity check on
-                  the subject string. first introduced in ngx_lua v0.8.1.
+    U             类似于‘u'选项，但禁用目标字符串PCRE的UTF-8有效性检查。
+                  该选项最早出现在ngx_lua v0.8.1版本
 
-    x             extended mode (similar to Perl's /x modifier)
+    x             扩展模式（类似于Perl中的/x修饰符）
 
 
-These options can be combined:
+这些选项可以联合使用：
 
 ```nginx
 
@@ -5076,9 +5071,9 @@ These options can be combined:
  -- m[1] == "美好"
 ```
 
-The `o` option is useful for performance tuning, because the regex pattern in question will only be compiled once, cached in the worker-process level, and shared among all requests in the current Nginx worker process. The upper limit of the regex cache can be tuned via the [lua_regex_cache_max_entries](#lua_regex_cache_max_entries) directive.
+`o`选项对于性能调优非常有用，因为正则匹配模式只会被编译一次，并缓存在工作进程中，并在该工作进程中的所有请求共享。可以通过[lua_regex_cache_max_entries](#lua_regex_cache_max_entries)指令对正则缓存的上限进行调整。
 
-The optional fourth argument, `ctx`, can be a Lua table holding an optional `pos` field. When the `pos` field in the `ctx` table argument is specified, `ngx.re.match` will start matching from that offset (starting from 1). Regardless of the presence of the `pos` field in the `ctx` table, `ngx.re.match` will always set this `pos` field to the position *after* the substring matched by the whole pattern in case of a successful match. When match fails, the `ctx` table will be left intact.
+第四个可选参数`ctx`可以是包含可选域`pos`的Lua table。如果`ctx`表中指定了`pos`域，`ngx.re.match`会从指定的offset（起点为1）开始匹配。如果没有指定`pos`，`ngx.re.match`总是在匹配成功时在匹配子串之后设定`pos`位置。如果匹配失败，`ctx`表保持不变。
 
 ```lua
 
@@ -5096,21 +5091,21 @@ The optional fourth argument, `ctx`, can be a Lua table holding an optional `pos
       -- ctx.pos == 5
 ```
 
-The `ctx` table argument combined with the `a` regex modifier can be used to construct a lexer atop `ngx.re.match`.
+`ctx`表参数和`a`正则修饰符一起使用可以用于创建一个Lexer。
 
-Note that, the `options` argument is not optional when the `ctx` argument is specified and that the empty Lua string (`""`) must be used as placeholder for `options` if no meaningful regex options are required.
+注意，当给定`ctx`参数时，`options`参数不再是可选的，并且如果不想给定有意义的选项参数，需要指定一个空字符串（`""`）作为占位符。
 
-This method requires the PCRE library enabled in Nginx.  ([Known Issue With Special Escaping Sequences](#special-escaping-sequences)).
+该方法要求Nginx开启PCRE库。([Known Issue With Special Escaping Sequences](#special-escaping-sequences)).
 
-To confirm that PCRE JIT is enabled, activate the Nginx debug log by adding the `--with-debug` option to Nginx or ngx_openresty's `./configure` script. Then, enable the "debug" error log level in `error_log` directive. The following message will be generated if PCRE JIT is enabled:
+为了确认开启PCRE JIT，在`./configure`脚本中添加`--with-debug`选项来开启Nginx debug日志。然后，在`error_log`指令中配置”debug“级别错误日志。如果PCRE JIT开启，错误日志中会有以下信息输出：
 
 
     pcre JIT compiling result: 1
 
 
-Starting from the `0.9.4` release, this function also accepts a 5th argument, `res_table`, for letting the caller supply the Lua table used to hold all the capturing results. Starting from `0.9.6`, it is the caller's responsibility to ensure this table is empty. This is very useful for recycling Lua tables and saving GC and table allocation overhead.
+从`0.9.4`版本开始，该函数也接受第五个参数`res_table`，用于给调用者提供一个存储所有捕获结果的Lua table。从`0.9.6`版本开始，调用者负责保证该表是空的。这对于重用Lua表和避免GC和表分配负担过重非常有用。
 
-This feature was introduced in the `v0.2.1rc11` release.
+该功能最早出现在`v0.2.1rc11`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
