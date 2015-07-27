@@ -4959,7 +4959,7 @@ ngx.re.match
 ------------
 **语法:** *captures, err = ngx.re.match(subject, regex, options?, ctx?, res_table?)*
 
-**上下文:** *init_worker_by_lua\*, set_by_lua\*, rewrite_by_lua\*, access_by_lua\*, content_by_lua\*, header_filter_by_lua\*, body_filter_by_lua\*, log_by_lua\*, ngx.timer.\**
+**上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
 根据`options`，使用PCRE `regex`正则匹配目标字符串`subject`。
 
@@ -5115,13 +5115,13 @@ ngx.re.find
 
 **上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
-Similar to [ngx.re.match](#ngxrematch) but only returns the begining index (`from`) and end index (`to`) of the matched substring. The returned indexes are 1-based and can be fed directly into the [string.sub](http://www.lua.org/manual/5.1/manual.html#pdf-string.sub) API function to obtain the matched substring.
+该函数与[ngx.re.match](#ngxrematch)类似，但只返回匹配子串的起始索引(`from`)和结束索引(`end`)。返回的索引从1开始，可以直接用于[string.sub](http://www.lua.org/manual/5.1/manual.html#pdf-string.sub)来获取匹配的子字符串。
 
-In case of errors (like bad regexes or any PCRE runtime errors), this API function returns two `nil` values followed by a string describing the error.
+如果发生错误（无效正则表达式或PCRE运行时错误），该函数返回两个`nil`和一个错误描述字符串。
 
-If no match is found, this function just returns a `nil` value.
+如果没有发现匹配，该函数仅返回一个`nil`。
 
-Below is an example:
+例如下面的一个例子：
 
 ```lua
 
@@ -5140,26 +5140,26 @@ Below is an example:
  end
 ```
 
-This example produces the output
+产生的输出为：
 
     from: 8
     to: 11
     matched: 1234
 
-Because this API function does not create new Lua strings nor new Lua tables, it is much faster than [ngx.re.match](#ngxrematch). It should be used wherever possible.
+由于该函数不创建新的Lua字符串和新的Lua table，因此该函数比[ngx.re.match](#ngxrematch)更高效。任何时候都应该尽量使用该函数。
 
-Since the `0.9.3` release, an optional 5th argument, `nth`, is supported to specify which (submatch) capture's indexes to return. When `nth` is 0 (which is the default), the indexes for the whole matched substring is returned; when `nth` is 1, then the 1st submatch capture's indexes are returned; when `nth` is 2, then the 2nd submatch capture is returned, and so on. When the specified submatch does not have a match, then two `nil` values will be returned. Below is an example for this:
+从`0.9.3`版本开始，第五个可选参数`nth`可以用于指定返回第几个捕获的索引。当`nth`为0（默认值）时，返回整个匹配子串的索引；当`nth`为2时，返回第二个匹配子串的索引，以此类推。当指定的捕获没有对应匹配，返回两个`nil`。看下面的这个例子：
 
 ```lua
 
  local str = "hello, 1234"
  local from, to = ngx.re.find(str, "([0-9])([0-9]+)", "jo", nil, 2)
  if from then
-     ngx.say("matched 2nd submatch: ", string.sub(str, from, to))  -- yields "234"
+     ngx.say("matched 2nd submatch: ", string.sub(str, from, to))  -- 输出”234“
  end
 ```
 
-This API function was first introduced in the `v0.9.2` release.
+该函数最早出现在`v0.9.2`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -5169,11 +5169,11 @@ ngx.re.gmatch
 
 **上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
-Similar to [ngx.re.match](#ngxrematch), but returns a Lua iterator instead, so as to let the user programmer iterate all the matches over the `<subject>` string argument with the PCRE `regex`.
+该函数与[ngx.re.match](#ngxrematch)类似，不同的是会返回一个Lua迭代器，以便用户可以遍历`<subject>`中匹配正则表达式`regex`的所有匹配。
 
-In case of errors, like seeing an ill-formed regular expression, `nil` and a string describing the error will be returned.
+如果发生错误（如错误正则表达式），会返回`nil`和一个错误描述字符串。
 
-Here is a small example to demonstrate its basic usage:
+下面是一个描述该函数基本用法的例子：
 
 ```lua
 
@@ -5203,7 +5203,7 @@ Here is a small example to demonstrate its basic usage:
  end
 ```
 
-More often we just put it into a Lua loop:
+更常见的做法是，我们会使用循环来迭代：
 
 ```lua
 
@@ -5221,23 +5221,23 @@ More often we just put it into a Lua loop:
      end
 
      if not m then
-         -- no match found (any more)
+         -- 不再有匹配
          break
      end
 
-     -- found a match
+     -- 匹配
      ngx.say(m[0])
      ngx.say(m[1])
  end
 ```
 
-The optional `options` argument takes exactly the same semantics as the [ngx.re.match](#ngxrematch) method.
+可选参数`options`的语义与在[ngx.re.match](#ngxrematch)中的相同。
 
-The current implementation requires that the iterator returned should only be used in a single request. That is, one should *not* assign it to a variable belonging to persistent namespace like a Lua package.
+当前的实现要求返回的迭代器仅能用于单个请求当中。也就是说，绝对不能将它赋值给一个拥有连续命名空间的变量（如Lua包）。
 
-This method requires the PCRE library enabled in Nginx.  ([Known Issue With Special Escaping Sequences](#special-escaping-sequences)).
+该方法需要Nginx使用PCRE库。([Known Issue With Special Escaping Sequences](#special-escaping-sequences))。
 
-This feature was first introduced in the `v0.2.1rc12` release.
+该功能最早出现在`v0.2.1rc12`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -5247,11 +5247,11 @@ ngx.re.sub
 
 **上下文:** *init_worker_by_lua, set_by_lua, rewrite_by_lua, access_by_lua, content_by_lua, header_filter_by_lua, body_filter_by_lua, log_by_lua, ngx.timer.*
 
-Substitutes the first match of the Perl compatible regular expression `regex` on the `subject` argument string with the string or function argument `replace`. The optional `options` argument has exactly the same meaning as in [ngx.re.match](#ngxrematch).
+对参数`subject`字符串使用字符串或函数参数`replace`替换第一个匹配`regex`的子串。可选参数`options`的语义与[ngx.re.match](#ngxrematch)中的相同。
 
-This method returns the resulting new string as well as the number of successful substitutions. In case of failures, like syntax errors in the regular expressions or the `<replace>` string argument, it will return `nil` and a string describing the error.
+该方法返回新的结果字符串和成功替换的数量。如果发生错误，返回`nil`和一个错误描述字符串。
 
-When the `replace` is a string, then it is treated as a special template for string replacement. For example,
+如果`replace`是一个字符串，它被看作是用于字符串替换的特殊模板。例如：
 
 ```lua
 
@@ -5265,9 +5265,9 @@ When the `replace` is a string, then it is treated as a special template for str
  end
 ```
 
-where `$0` referring to the whole substring matched by the pattern and `$1` referring to the first parenthesized capturing substring.
+`$0`是整个模式匹配的子串，`$1`是第一个括号匹配捕获的子串。
 
-Curly braces can also be used to disambiguate variable names from the background string literals: 
+花括号也用于消除歧义：
 
 ```lua
 
@@ -5285,9 +5285,9 @@ Literal dollar sign characters (`$`) in the `replace` string argument can be esc
      -- n == 1
 ```
 
-Do not use backlashes to escape dollar signs; it will not work as expected.
+不要使用反斜杠转移`$`，会有问题哦。
 
-When the `replace` argument is of type "function", then it will be invoked with the "match table" as the argument to generate the replace string literal for substitution. The "match table" fed into the `replace` function is exactly the same as the return value of [ngx.re.match](#ngxrematch). Here is an example:
+如果`replace`参数是函数类型，该函数会以匹配列表作为参数，产生用于替换的替换字符串。`replace`函数的输入参数”match table"与[ngx.re.match](#ngxrematch)的返回值相同。看下面的例子：
 
 ```lua
 
@@ -5299,11 +5299,11 @@ When the `replace` argument is of type "function", then it will be invoked with 
      -- n == 1
 ```
 
-The dollar sign characters in the return value of the `replace` function argument are not special at all.
+`replace`函数参数的返回值中的`$`字符没有特殊含义。
 
-This method requires the PCRE library enabled in Nginx.  ([Known Issue With Special Escaping Sequences](#special-escaping-sequences)).
+该方法要求Nginx使用PCRE库。([Known Issue With Special Escaping Sequences](#special-escaping-sequences))。
 
-This feature was first introduced in the `v0.2.1rc13` release.
+该功能最早出现在`v0.2.1rc13`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -5313,9 +5313,9 @@ ngx.re.gsub
 
 **上下文:** *init_worker_by_lua, set_by_lua, rewrite_by_lua, access_by_lua, content_by_lua, header_filter_by_lua, body_filter_by_lua, log_by_lua, ngx.timer.*
 
-Just like [ngx.re.sub](#ngxresub), but does global substitution.
+与[ngx.re.sub](#ngxresub)类似，但是做全局替换。
 
-Here is some examples:
+这是一些例子：
 
 ```lua
 
@@ -5339,9 +5339,9 @@ Here is some examples:
      -- n == 2
 ```
 
-This method requires the PCRE library enabled in Nginx.  ([Known Issue With Special Escaping Sequences](#special-escaping-sequences)).
+该方法要求Nginx使用PCRE库。([Known Issue With Special Escaping Sequences](#special-escaping-sequences))。
 
-This feature was first introduced in the `v0.2.1rc15` release.
+该功能最早出现在`v0.2.1rc15`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
