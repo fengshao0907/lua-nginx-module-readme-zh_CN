@@ -1051,7 +1051,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [回到目录](#table-of-contents)
 
-指令列表
+Directives
 ==========
 
 * [lua_use_default_type](#lua_use_default_type)
