@@ -7,8 +7,8 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 *Nginx源代码不包含该模块。* 详情看这里 [the installation instructions](#installation).
 
 
-目录
-====
+Table of Contents
+=================
 
 * [模块名字](#name)
 * [状态](#status)
@@ -45,7 +45,7 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 * [测试组件](#test-suite)
 * [版权和许可证](#copyright-and-license)
 * [有用连接](#see-also)
-* [Nginx-lua指令](#directives)
+* [Directives](#directives)
 * [Nginx API for Lua](#nginx-api-for-lua)
 * [已弃用部分](#obsolete-sections)
     * [特殊PCRE序列](#special-pcre-sequences)
