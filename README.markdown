@@ -1,5 +1,5 @@
 
-模块名字
+Name
 =======
 
 ngx_lua - 将lua脚本能力嵌入到Nginx
@@ -10,57 +10,57 @@ ngx_lua - 将lua脚本能力嵌入到Nginx
 Table of Contents
 =================
 
-* [模块名字](#name)
-* [状态](#status)
-* [版本](#version)
-* [用法](#synopsis)
-* [描述](#description)
-* [典型用法](#typical-uses)
-* [Nginx兼容性](#nginx-compatibility)
-* [安装](#installation)
-    * [C Macro配置](#c-macro-configurations)
-    * [Ubuntu 11.10安装](#installation-on-ubuntu-1110)
-* [社区](#community)
-    * [英文邮件列表](#english-mailing-list)
-    * [中文邮件列表](#chinese-mailing-list)
-* [源代码库](#code-repository)
-* [缺陷和补丁](#bugs-and-patches)
-* [Lua/LuaJIT字节码支持](#lualuajit-bytecode-support)
-* [系统环境变量支持](#system-environment-variable-support)
-* [HTTP 1.0支持](#http-10-support)
-* [静态连接纯Lua模块](#statically-linking-pure-lua-modules)
-* [Nginx工作进程间的数据共享](#data-sharing-within-an-nginx-worker)
-* [已知问题](#known-issues)
-    * [TCP套接字连接操作](#tcp-socket-connect-operation-issues)
-    * [Lua协程的Yielding/Resuming](#lua-coroutine-yieldingresuming)
-    * [Lua变量作用域](#lua-variable-scope)
-    * [其他模块的子请求指令配置的Locations](#locations-configured-by-subrequest-directives-of-other-modules)
-    * [Cosockets不可用](#cosockets-not-available-everywhere)
-    * [特殊转义序列](#special-escaping-sequences)
-    * [不支持混合SSI](#mixing-with-ssi-not-supported)
-    * [不完全支持SPDY模式](#spdy-mode-not-fully-supported)
-    * [短路请求上丢失数据](#missing-data-on-short-circuited-requests)
-* [待完成](#todo)
-* [修改历史](#changes)
-* [测试组件](#test-suite)
-* [版权和许可证](#copyright-and-license)
-* [有用连接](#see-also)
+* [Name](#name)
+* [Status](#status)
+* [Version](#version)
+* [Synopsis](#synopsis)
+* [Description](#description)
+* [Tipical Uses](#typical-uses)
+* [Nginx Compatibility](#nginx-compatibility)
+* [Installation](#installation)
+    * [C Macro Configuration](#c-macro-configurations)
+    * [Installation on Ubuntu 11.10](#installation-on-ubuntu-1110)
+* [Community](#community)
+    * [English Mailing List](#english-mailing-list)
+    * [Chinese Mailing List](#chinese-mailing-list)
+* [Code Repository](#code-repository)
+* [Bugs and Patches](#bugs-and-patches)
+* [Lua/LuaJIT Bytecode Support](#lualuajit-bytecode-support)
+* [System Environment Variable Support](#system-environment-variable-support)
+* [HTTP 1.0 Support](#http-10-support)
+* [Statically Linking Pure Lua Modules](#statically-linking-pure-lua-modules)
+* [Data Sharing within an Nginx Worker](#data-sharing-within-an-nginx-worker)
+* [Known Issues](#known-issues)
+    * [TCP socket connect operation issues](#tcp-socket-connect-operation-issues)
+    * [Lua Coroutine Yielding/Resuming](#lua-coroutine-yieldingresuming)
+    * [Lua Variable Scope](#lua-variable-scope)
+    * [Locations Configured by Subrequest Directives of Other Modules](#locations-configured-by-subrequest-directives-of-other-modules)
+    * [Cosockets Not Available Everywhere](#cosockets-not-available-everywhere)
+    * [Special Escaping Sequences](#special-escaping-sequences)
+    * [Mixing with SSI Not Supported](#mixing-with-ssi-not-supported)
+    * [SPDY Mode Not Fully Supported](#spdy-mode-not-fully-supported)
+    * [Missing data on short circuited requests](#missing-data-on-short-circuited-requests)
+* [TODO](#todo)
+* [Changes](#changes)
+* [Test Suite](#test-suite)
+* [Copyright and License](#copyright-and-license)
+* [See Also](#see-also)
 * [Directives](#directives)
 * [Nginx API for Lua](#nginx-api-for-lua)
-* [已弃用部分](#obsolete-sections)
-    * [特殊PCRE序列](#special-pcre-sequences)
+* [Obsolete Sections](#obsolete-sections)
+    * [Special PCRE Sequences](#special-pcre-sequences)
 
-状态
+Status
 ======
 
 Production ready.
 
-版本
+Version
 =======
 
 This document describes ngx_lua [v0.9.16](https://github.com/openresty/lua-nginx-module/tags) released on 22 June 2015.
 
-用法
+Synopsis
 ========
 ```nginx
 
@@ -234,7 +234,7 @@ This document describes ngx_lua [v0.9.16](https://github.com/openresty/lua-nginx
 
 [回到目录](#table-of-contents)
 
-描述
+Description
 ===========
 
 This module embeds Lua, via the standard Lua 5.1 interpreter or [LuaJIT 2.0/2.1](http://luajit.org/luajit.html), into Nginx and by leveraging Nginx's subrequests, allows the integration of the powerful Lua threads (Lua coroutines) into the Nginx event model.
@@ -267,7 +267,7 @@ Loaded Lua modules persist in the nginx worker process level resulting in a smal
 
 [回到目录](#table-of-contents)
 
-典型用法
+Typical Uses
 ============
 
 Just to name a few:
@@ -288,7 +288,7 @@ The Lua state (Lua VM instance) is shared across all the requests handled by a s
 
 [回到目录](#table-of-contents)
 
-Nginx兼容性
+Nginx Compatibility
 ===================
 The latest module is compatible with the following versions of Nginx:
 
@@ -305,7 +305,7 @@ The latest module is compatible with the following versions of Nginx:
 
 [回到目录](#table-of-contents)
 
-安装
+Installation
 ============
 
 It is highly recommended to use the [ngx_openresty bundle](http://openresty.org) that bundles Nginx, ngx_lua,  LuaJIT 2.0/2.1 (or the optional standard Lua 5.1 interpreter), as well as a package of powerful companion Nginx modules. The basic installation step is a simple command: `./configure --with-luajit && make && make install`.
@@ -349,7 +349,7 @@ Build the source with this module:
 
 [回到目录](#table-of-contents)
 
-C宏配置
+C Macro Configurations
 ----------------------
 
 While building this module either via OpenResty or with the NGINX core, you can define the following C macros via the C compiler options:
@@ -369,7 +369,7 @@ To enable one or more of these macros, just pass extra C compiler options to the
 
 [回到目录](#table-of-contents)
 
-Ubuntu 11.10安装方法
+Installation on Ubuntu 11.10
 ----------------------------
 
 Note that it is recommended to use LuaJIT 2.0 or LuaJIT 2.1 instead of the standard Lua 5.1 interpreter wherever possible.
@@ -392,33 +392,33 @@ Library name `liblua.so` has been changed in liblua5.1 package, it only comes wi
 
 [回到目录](#table-of-contents)
 
-社区
+Community
 =========
 
 [回到目录](#table-of-contents)
 
-英文邮件列表
+English Mailing List
 --------------------
 
 The [openresty-en](https://groups.google.com/group/openresty-en) mailing list is for English speakers.
 
 [回到目录](#table-of-contents)
 
-中文邮件列表
+Chinese Mailing List
 --------------------
 
 The [openresty](https://groups.google.com/group/openresty) mailing list is for Chinese speakers.
 
 [回到目录](#table-of-contents)
 
-代码库
+Code Repository
 ===============
 
 The code repository of this project is hosted on github at [openresty/lua-nginx-module](https://github.com/openresty/lua-nginx-module).
 
 [回到目录](#table-of-contents)
 
-缺陷和补丁
+Bugs and Patches
 ================
 
 Please submit bug reports, wishlists, or patches by
@@ -428,7 +428,7 @@ Please submit bug reports, wishlists, or patches by
 
 [回到目录](#table-of-contents)
 
-Lua/LuaJIT字节码支持
+Lua/LuaJIT Bytecode Support
 ===========================
 
 As from the `v0.5.0rc32` release, all `*_by_lua_file` configure directives (such as [content_by_lua_file](#content_by_lua_file)) support loading Lua 5.1 and LuaJIT 2.0/2.1 raw bytecode files directly.
@@ -477,7 +477,7 @@ Loading bytecode files via the Lua primitives like `require` and `dofile` should
 
 [回到目录](#table-of-contents)
 
-系统环境变量支持
+System Environment Variable Support
 ===================================
 
 If you want to access the system environment variable, say, `foo`, in Lua via the standard Lua API [os.getenv](http://www.lua.org/manual/5.1/manual.html#pdf-os.getenv), then you should also list this environment variable name in your `nginx.conf` file via the [env directive](http://nginx.org/en/docs/ngx_core_module.html#env). For example,
@@ -489,7 +489,7 @@ If you want to access the system environment variable, say, `foo`, in Lua via th
 
 [回到目录](#table-of-contents)
 
-HTTP 1.0支持
+HTTP 1.0 Support
 ================
 
 The HTTP 1.0 protocol does not support chunked output and requires an explicit `Content-Length` header when the response body is not empty in order to support the HTTP 1.0 keep-alive.
@@ -505,7 +505,7 @@ To force `curl` to send HTTP 1.0 requests, use the `-0` option.
 
 [回到目录](#table-of-contents)
 
-静态连接纯lua模块
+Statically Linking Pure Lua Modules
 ===================================
 
 When LuaJIT 2.x is used, it is possible to statically link the bytecode of pure Lua modules into the Nginx executable.
@@ -586,7 +586,7 @@ where `/path/to/lib` is the path of the directory containing the `libmyluafiles.
 
 [回到目录](#table-of-contents)
 
-Nginx工作进程间的数据共享
+Data Sharing within an Nginx Worker
 ===================================
 
 To globally share data among all the requests handled by the same nginx worker process, encapsulate the shared data into a Lua module, use the Lua `require` builtin to import the module, and then manipulate the shared data in Lua. This works because required Lua modules are loaded only once and all coroutines will share the same copy of the module (both its code and data). Note however that Lua global variables (note, not module-level variables) WILL NOT persist between requests because of the one-coroutine-per-request isolation design.
@@ -647,12 +647,12 @@ If server-wide data sharing is required, then use one or more of the following a
 
 [回到目录](#table-of-contents)
 
-已知问题
+Known Issues
 ============
 
 [回到目录](#table-of-contents)
 
-TCP套接字连接操作问题 
+TCP socket connect operation issues
 -----------------------------------
 The [tcpsock:connect](#tcpsockconnect) method may indicate `success` despite connection failures such as with `Connection Refused` errors. 
 
@@ -662,40 +662,40 @@ This issue is due to limitations in the Nginx event model and only appears to af
 
 [回到目录](#table-of-contents)
 
-Lua协程的Yielding/Resuming
+Lua Coroutine Yielding/Resuming
 -------------------------------
 * Because Lua's `dofile` and `require` builtins are currently implemented as C functions in both Lua 5.1 and LuaJIT 2.0/2.1, if the Lua file being loaded by `dofile` or `require` invokes [ngx.location.capture*](#ngxlocationcapture), [ngx.exec](#ngxexec), [ngx.exit](#ngxexit), or other API functions requiring yielding in the *top-level* scope of the Lua file, then the Lua error "attempt to yield across C-call boundary" will be raised. To avoid this, put these calls requiring yielding into your own Lua functions in the Lua file instead of the top-level scope of the file.
 * As the standard Lua 5.1 interpreter's VM is not fully resumable, the methods [ngx.location.capture](#ngxlocationcapture), [ngx.location.capture_multi](#ngxlocationcapture_multi), [ngx.redirect](#ngxredirect), [ngx.exec](#ngxexec), and [ngx.exit](#ngxexit) cannot be used within the context of a Lua [pcall()](http://www.lua.org/manual/5.1/manual.html#pdf-pcall) or [xpcall()](http://www.lua.org/manual/5.1/manual.html#pdf-xpcall) or even the first line of the `for ... in ...` statement when the standard Lua 5.1 interpreter is used and the `attempt to yield across metamethod/C-call boundary` error will be produced. Please use LuaJIT 2.x, which supports a fully resumable VM, to avoid this.
 
 [回到目录](#table-of-contents)
 
-Lua变量作用域
+Lua Variable Scope
 ------------------
-Care must be taken when importing modules and this form should be used:
+注意，在导入模块时，应该使用以下形式：
 
 ```lua
 
  local xxx = require('xxx')
 ```
 
-instead of the old deprecated form:
+而不是这种形式：
 
 ```lua
 
  require('xxx')
 ```
 
-Here is the reason: by design, the global environment has exactly the same lifetime as the Nginx request handler associated with it. Each request handler has its own set of Lua global variables and that is the idea of request isolation. The Lua module is actually loaded by the first Nginx request handler and is cached by the `require()` built-in in the `package.loaded` table for later reference, and the `module()` builtin used by some Lua modules has the side effect of setting a global variable to the loaded module table. But this global variable will be cleared at the end of the request handler,  and every subsequent request handler all has its own (clean) global environment. So one will get Lua exception for accessing the `nil` value.
+原因如下：在设计上，全局变量的生命周期与请求的处理函数相同。每个请求处理函数拥有自身的Lua全局变量，这就是所谓的请求独立思想。通常，Lua模块会被首个Nginx请求处理函数加载，并通过`package.loaded`的内建指令`require()`缓存，用于后续使用。一些Lua模块使用的`module()`内建指令有设置全局变量给加载的模块table的副作用。但是该全局变量会在请求处理结束时被清空，每个请求的处理函数都拥有各自（干净）的全局环境。所以访问`nil`值会抛出Lua异常。
 
-Generally, use of Lua global variables is a really really bad idea in the context of ngx_lua because
+通常来说，在ngx_lua的上下文使用Lua全局变量是很不好的做法，因为：
 
-1. misuse of Lua globals has very bad side effects for concurrent requests when these variables are actually supposed to be local only,
-1. Lua global variables require Lua table look-up in the global environment (which is just a Lua table), which is kinda expensive, and
-1. some Lua global variable references are just typos, which are hard to debug.
+1. 对于并发请求，当仅可以使用局部变量而误用了全局变量时，会引入严重的副作用；
+2. Lua全局变量会在全局环境中查找Lua table，这通常代价较大；
+3. 一些全局变量引用通常只是typos，这很难调试。
 
-It's *highly* recommended to always declare them via "local" in the scope that is reasonable.
+强烈建议尽可能仅适用“local”变量。
 
-To find out all the uses of Lua global variables in your Lua code, you can run the [lua-releng tool](https://github.com/openresty/nginx-devel-utils/blob/master/lua-releng) across all your .lua source files:
+想知道你的Lua代码中使用的所有全局变量，可以在你的lua代码中运行[lua-releng tool](https://github.com/openresty/nginx-devel-utils/blob/master/lua-releng)：
 
     $ lua-releng
     Checking use of Lua global variables in file lib/foo/bar.lua ...
@@ -703,13 +703,13 @@ To find out all the uses of Lua global variables in your Lua code, you can run t
             55      [1506]  GETGLOBAL       7 -3    ; setvar
             3       [1545]  GETGLOBAL       3 -4    ; varexpand
 
-The output says that the line 1489 of file `lib/foo/bar.lua` writes to a global variable named `contains`, the line 1506 reads from the global variable `setvar`, and line 1545 reads the global `varexpand`.
+输出显示文件`lib/foo/bar.lua`的第1489行对全局变量`contains`执行了写入操作，第1506行对全局变量`setvar`执行了读取操作，第1545行对全局变量`varexpand`执行了读取操作。
 
-This tool will guarantee that local variables in the Lua module functions are all declared with the `local` keyword, otherwise a runtime exception will be thrown. It prevents undesirable race conditions while accessing such variables. See [Data Sharing within an Nginx Worker](#data-sharing-within-an-nginx-worker) for the reasons behind this.
+该工具可以保证在Lua模块函数中的局部变量都是用`local`定义，否则会抛出运行时异常。在访问该变量时，它会避免不必要的静态条件。原因见[Data Sharing within an Nginx Worker](#data-sharing-within-an-nginx-worker)。
 
 [回到目录](#table-of-contents)
 
-其他模块子请求配置的Location
+Locations Configured by Subrequest Directives of Other Modules
 --------------------------------------------------------------
 The [ngx.location.capture](#ngxlocationcapture) and [ngx.location.capture_multi](#ngxlocationcapture_multi) directives cannot capture locations that include the [add_before_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_before_body), [add_after_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_after_body), [auth_request](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html#auth_request), [echo_location](http://github.com/openresty/echo-nginx-module#echo_location), [echo_location_async](http://github.com/openresty/echo-nginx-module#echo_location_async), [echo_subrequest](http://github.com/openresty/echo-nginx-module#echo_subrequest), or [echo_subrequest_async](http://github.com/openresty/echo-nginx-module#echo_subrequest_async) directives.
 
@@ -737,7 +737,7 @@ will not work as expected.
 
 [回到目录](#table-of-contents)
 
-Cosocket在任何位置不可用
+Cosockets Not Available Everywhere
 ----------------------------------
 
 Due the internal limitations in the nginx core, the cosocket API are disabled in the following contexts: [set_by_lua*](#set_by_lua), [log_by_lua*](#log_by_lua), [header_filter_by_lua*](#header_filter_by_lua), and [body_filter_by_lua](#body_filter_by_lua).
@@ -748,7 +748,7 @@ There exists a work-around, however, when the original context does *not* need t
 
 [回到目录](#table-of-contents)
 
-特殊转义序列
+Special Escaping Sequences
 --------------------------
 PCRE sequences such as `\d`, `\s`, or `\w`, require special attention because in string literals, the backslash character, `\`, is stripped out by both the Lua language parser and by the Nginx config file parser before processing. So the following snippet will not work as expected:
 
@@ -840,21 +840,21 @@ Within external script files, PCRE sequences presented as long-bracketed Lua str
 
 [回到目录](#table-of-contents)
 
-不支持与SSI混合使用
+Mixing with SSI Not Supported
 -----------------------------
 
 Mixing SSI with ngx_lua in the same Nginx request is not supported at all. Just use ngx_lua exclusively. Everything you can do with SSI can be done atop ngx_lua anyway and it can be more efficient when using ngx_lua.
 
 [回到目录](#table-of-contents)
 
-不完全支持SPDY模式
+SPDY Mode Not Fully Supported
 -----------------------------
 
 Certain Lua APIs provided by ngx_lua do not work in Nginx's SPDY mode yet: [ngx.location.capture](#ngxlocationcapture), [ngx.location.capture_multi](#ngxlocationcapture_multi), and [ngx.req.socket](#ngxreqsocket).
 
 [回到目录](#table-of-contents)
 
-短路请求丢失数据
+Missing data on short circuited requests
 ----------------------------------------
 
 Nginx may terminate a request early with (at least):
@@ -875,8 +875,8 @@ phases.
 
 [回到目录](#table-of-contents)
 
-待办事项
-=======
+TODO
+====
 
 * add `*_by_lua_block` directives for existing `*_by_lua` directives so that we put literal Lua code directly in curly braces instead of an nginx literal string. For example,
 ```nginx
@@ -937,7 +937,7 @@ phases.
 
 [回到目录](#table-of-contents)
 
-改动
+Changes
 =======
 
 The changes of every release of this module can be obtained from the ngx_openresty bundle's change logs:
@@ -946,7 +946,7 @@ The changes of every release of this module can be obtained from the ngx_openres
 
 [回到目录](#table-of-contents)
 
-测试组件
+Test Suite
 ==========
 
 The following dependencies are required to run the test suite:
@@ -1004,7 +1004,7 @@ There are also various testing modes based on mockeagain, valgrind, and etc. Ref
 
 [回到目录](#table-of-contents)
 
-版权和许可证
+Copyright and License
 =====================
 
 This module is licensed under the BSD license.
@@ -1025,7 +1025,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [回到目录](#table-of-contents)
 
-一些链接
+See Also
 ========
 
 * [lua-resty-memcached](https://github.com/openresty/lua-resty-memcached) library based on ngx_lua cosocket.
