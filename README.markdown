@@ -64,20 +64,20 @@ Synopsis
 ========
 ```nginx
 
- # set search paths for pure Lua external libraries (';;' is the default path):
+ # 为Lua外部库指定搜索路径（';;'为默认路径）
  lua_package_path '/foo/bar/?.lua;/blah/?.lua;;';
 
- # set search paths for Lua external libraries written in C (can also use ';;'):
+ # 为C写的Lua外部库指定搜索路径（也可以使用';;'）
  lua_package_cpath '/bar/baz/?.so;/blah/blah/?.so;;';
 
  server {
      location /inline_concat {
-         # MIME type determined by default_type:
+         # 由default_type指定的MIME类型
          default_type 'text/plain';
 
          set $a "hello";
          set $b "world";
-         # inline Lua script
+         # 内联lua脚本
          set_by_lua $res "return ngx.arg[1]..ngx.arg[2]" $a $b;
          echo $res;
      }
@@ -85,7 +85,7 @@ Synopsis
      location /rel_file_concat {
          set $a "foo";
          set $b "bar";
-         # script path relative to nginx prefix
+         # 相对于nginx安装路径的lua脚本路径
          # $ngx_prefix/conf/concat.lua contents:
          #
          #    return ngx.arg[1]..ngx.arg[2]
@@ -97,28 +97,28 @@ Synopsis
      location /abs_file_concat {
          set $a "fee";
          set $b "baz";
-         # absolute script path not modified
+         # 不可更改的脚本绝对路径
          set_by_lua_file $res /usr/nginx/conf/concat.lua $a $b;
          echo $res;
      }
 
      location /lua_content {
-         # MIME type determined by default_type:
+         # 由default_type指定的MIME类型
          default_type 'text/plain';
 
          content_by_lua "ngx.say('Hello,world!')";
      }
 
      location /nginx_var {
-         # MIME type determined by default_type:
+         # 由default_type指定的MIME类型
          default_type 'text/plain';
 
-         # try access /nginx_var?a=hello,world
+         # 访问 /nginx_var?a=hello,world
          content_by_lua "ngx.print(ngx.var['arg_a'], '\\n')";
      }
 
      location /request_body {
-          # force reading request body (default off)
+          # 强制读取请求体（默认关闭）
           lua_need_request_body on;
           client_max_body_size 50k;
           client_body_buffer_size 50k;
@@ -126,9 +126,9 @@ Synopsis
           content_by_lua 'ngx.print(ngx.var.request_body)';
      }
 
-     # transparent non-blocking I/O in Lua via subrequests
+     # 使用子请求在Lua中发送非阻塞IO
      location /lua {
-         # MIME type determined by default_type:
+         # 由default_type指定的MIME类型
          default_type 'text/plain';
 
          content_by_lua '
@@ -140,7 +140,7 @@ Synopsis
 
      # GET /recur?num=5
      location /recur {
-         # MIME type determined by default_type:
+         # 由default_type指定的MIME类型
          default_type 'text/plain';
 
          content_by_lua '
@@ -197,9 +197,8 @@ Synopsis
          content_by_lua_file /path/to/content.lua;
      }
 
-     # use nginx var in code path
-     # WARNING: contents in nginx var must be carefully filtered,
-     # otherwise there'll be great security risk!
+     # 在代码路径中使用Nginx var变量
+     # 警告：Nginx var变量的内容必须仔细过滤，否则会有很大的安全风险！
      location ~ ^/app/([-_a-zA-Z0-9/]+) {
          set $path $1;
          content_by_lua_file /path/to/lua/app/root/$path.lua;
@@ -212,19 +211,19 @@ Synopsis
         client_body_buffer_size 100k;
 
         access_by_lua '
-            -- check the client IP address is in our black list
+            -- 在黑名单中检查客户端IP地址
             if ngx.var.remote_addr == "132.5.72.3" then
                 ngx.exit(ngx.HTTP_FORBIDDEN)
             end
 
-            -- check if the request body contains bad words
+            -- 检查请求体中是否含有特定单词
             if ngx.var.request_body and
                      string.match(ngx.var.request_body, "fsck")
             then
                 return ngx.redirect("/terms_of_use.html")
             end
 
-            -- tests passed
+            -- 测试通过
         ';
 
         # proxy_pass/fastcgi_pass/etc settings
