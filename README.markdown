@@ -492,6 +492,17 @@ If you want to access the system environment variable, say, `foo`, in Lua via th
 HTTP 1.0 Support
 ================
 
+HTTP 1.0协议不支持chunked编码输出，为了支持keep-alive特性，当响应包体不为空时，要求带有`Content-Length`头部。
+
+所以，当发起一个HTTP 1.0协议的请求，并且开启了[lua_http10_buffering](#lua_http10_buffering)指令，ngx_lua会缓存[ngx.say](#ngxsay)和[ngx.print](#ngxprint)的输出，并且会推迟发送响应头，直到收到了所有的响应体输出。
+
+彼时，ngx_lua便可以计算出整个包体的长度，并创建正确的`Content-Length`头部返回给HTTP 1.0客户端。如果`Content-Length`响应头在运行的Lua代码中设置，缓存功能会禁用，即使[lua_http10_buffering](#lua_http10_buffering)指令是开启状态。
+
+对于大的流输出响应体，关闭[lua_http10_buffering](#lua_http10_buffering)指令以减少内存消耗至关重要。
+
+注意，通常诸如`ab`和`http_load`等HTTP的基准测试工具默认发起的都是HTTP 1.0的请求。
+
+要用`curl`发起HTTP 1.0请求，需要使用`-0`选项。
 The HTTP 1.0 protocol does not support chunked output and requires an explicit `Content-Length` header when the response body is not empty in order to support the HTTP 1.0 keep-alive.
 So when a HTTP 1.0 request is made and the [lua_http10_buffering](#lua_http10_buffering) directive is turned `on`, ngx_lua will buffer the
 output of [ngx.say](#ngxsay) and [ngx.print](#ngxprint) calls and also postpone sending response headers until all the response body output is received.
@@ -4366,17 +4377,17 @@ This API was first introduced in ngx_lua v0.3.1rc6.
 
 ngx.print
 ---------
-**syntax:** *ok, err = ngx.print(...)*
+**语法:** *ok, err = ngx.print(...)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Emits arguments concatenated to the HTTP client (as response body). If response headers have not been sent, this function will send headers out first and then output body data.
+拼接参数发送给HTTP客户端（作为包体）。如果响应头尚且没有发送，该函数会先发送头部，然后发送包体数据。
 
-Since `v0.8.3` this function returns `1` on success, or returns `nil` and a string describing the error otherwise.
+从`v0.8.3`版本开始，该函数成功返回`1`，否则返回`nil`和一个错误描述字符串。
 
-Lua `nil` values will output `"nil"` strings and Lua boolean values will output `"true"` and `"false"` literal strings respectively.
+Lua的`nil`值会输出`"nil"`字符串，Lua布尔值会输出`"true"`和`"false"`字符串。
 
-Nested arrays of strings are permitted and the elements in the arrays will be sent one by one:
+嵌套字符串数组也是允许的，数组的元素会逐个发送：
 
 ```lua
 
@@ -4388,30 +4399,30 @@ Nested arrays of strings are permitted and the elements in the arrays will be se
  ngx.print(table)
 ```
 
-will yield the output
+输出：
 
 ```bash
 
  hello, world: true or false: nil
 ```
 
-Non-array table arguments will cause a Lua exception to be thrown.
+非数组table参数会抛出Lua异常。
 
-The `ngx.null` constant will yield the `"null"` string output.
+`ngx.null`常量输出`"null"`字符串。
 
-This is an asynchronous call and will return immediately without waiting for all the data to be written into the system send buffer. To run in synchronous mode, call `ngx.flush(true)` after calling `ngx.print`. This can be particularly useful for streaming output. See [ngx.flush](#ngxflush) for more details.
+这是一个异步调用，不会等待所有数据都写入系统的发送缓冲区，而是立即返回。要以同步的方式允许，可以在`ngx.print`之后调用`ngx.flush(true)`。这对于流式输出非常有用。更多细节请看[ngx.flush](#ngxflush)。
 
-Please note that both `ngx.print` and [ngx.say](#ngxsay) will always invoke the whole Nginx output body filter chain, which is an expensive operation. So be careful when calling either of these two in a tight loop; buffer the data yourself in Lua and save the calls.
+注意，`ngx.print`和[ngx.say](#ngxsay)总是会唤醒整个Nginx输出包体过滤链，而这是代价昂贵的操作。所以，如果要在循环中调用这两个函数需要格外小心，自个儿在Lua中缓存数据，节省调用。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.say
 -------
-**syntax:** *ok, err = ngx.say(...)*
+**语法:** *ok, err = ngx.say(...)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Just as [ngx.print](#ngxprint) but also emit a trailing newline.
+与[ngx.print](#ngxprint)类似，但也发送换行符。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -4540,17 +4551,17 @@ ngx.eof
 
 ngx.sleep
 ---------
-**syntax:** *ngx.sleep(seconds)*
+**语法:** *ngx.sleep(seconds)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Sleeps for the specified seconds without blocking. One can specify time resolution up to 0.001 seconds (i.e., one milliseconds).
+非阻塞地睡眠指定秒数。可以指定的时间精度为0.001秒。
 
-Behind the scene, this method makes use of the Nginx timers.
+该方法底层实现使用了Nginx定时器。
 
-Since the `0.7.20` release, The `0` time argument can also be specified.
+从`0.7.20`版本开始，时间参数也可以指定为`0`。
 
-This method was introduced in the `0.5.0rc30` release.
+该方法最早出现在`0.5.0rc30`版本。
 
 [回到目录](#nginx-api-for-lua)
 
