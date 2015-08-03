@@ -711,7 +711,7 @@ Lua Variable Scope
 
 Locations Configured by Subrequest Directives of Other Modules
 --------------------------------------------------------------
-The [ngx.location.capture](#ngxlocationcapture) and [ngx.location.capture_multi](#ngxlocationcapture_multi) directives cannot capture locations that include the [add_before_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_before_body), [add_after_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_after_body), [auth_request](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html#auth_request), [echo_location](http://github.com/openresty/echo-nginx-module#echo_location), [echo_location_async](http://github.com/openresty/echo-nginx-module#echo_location_async), [echo_subrequest](http://github.com/openresty/echo-nginx-module#echo_subrequest), or [echo_subrequest_async](http://github.com/openresty/echo-nginx-module#echo_subrequest_async) directives.
+[ngx.location.capture](#ngxlocationcapture)和[ngx.location.capture_multi](#ngxlocationcapture_multi)指令不能捕获包含以下指令的location：[add_before_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_before_body), [add_after_body](http://nginx.org/en/docs/http/ngx_http_addition_module.html#add_after_body), [auth_request](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html#auth_request), [echo_location](http://github.com/openresty/echo-nginx-module#echo_location), [echo_location_async](http://github.com/openresty/echo-nginx-module#echo_location_async), [echo_subrequest](http://github.com/openresty/echo-nginx-module#echo_subrequest)和[echo_subrequest_async](http://github.com/openresty/echo-nginx-module#echo_subrequest_async)。例如，
 
 ```nginx
 
@@ -733,39 +733,39 @@ The [ngx.location.capture](#ngxlocationcapture) and [ngx.location.capture_multi]
  $ curl -i http://example.com/foo
 ```
 
-will not work as expected.
+以上例子不能如期工作。
 
 [回到目录](#table-of-contents)
 
 Cosockets Not Available Everywhere
 ----------------------------------
 
-Due the internal limitations in the nginx core, the cosocket API are disabled in the following contexts: [set_by_lua*](#set_by_lua), [log_by_lua*](#log_by_lua), [header_filter_by_lua*](#header_filter_by_lua), and [body_filter_by_lua](#body_filter_by_lua).
+由于Nginx内核的限制，在以下这些上下文中，cosocket API是禁用的：[set_by_lua*](#set_by_lua), [log_by_lua*](#log_by_lua), [header_filter_by_lua*](#header_filter_by_lua)和[body_filter_by_lua](#body_filter_by_lua)。
 
-The cosockets are currently also disabled in the [init_by_lua*](#init_by_lua) and [init_worker_by_lua*](#init_worker_by_lua) directive contexts but we may add support for these contexts in the future because there is no limitation in the nginx core (or the limitation might be worked around).
+目前，cosocket在[init_by_lua*](#init_by_lua)和[init_worker_by_lua*](#init_worker_by_lua)指令上下文也是禁用的，但以后我们可能支持该上下文，因为在Nginx内核对此没有限制（或者可以绕过限制）。
 
-There exists a work-around, however, when the original context does *not* need to wait for the cosocket results. That is, creating a 0-delay timer via the [ngx.timer.at](#ngxtimerat) API and do the cosocket results in the timer handler, which runs asynchronously as to the original context creating the timer.
+尽管如此，如果原始上下文不需要等待cosocket的返回结果，那么存在一种绕道而行的办法。使用ngx.timer.at](#ngxtimerat)创建一个0延时计时器，在计时器回调中异步运行计算cosckit结果。
 
 [回到目录](#table-of-contents)
 
 Special Escaping Sequences
 --------------------------
-PCRE sequences such as `\d`, `\s`, or `\w`, require special attention because in string literals, the backslash character, `\`, is stripped out by both the Lua language parser and by the Nginx config file parser before processing. So the following snippet will not work as expected:
+你需要对诸如`\d`，`\s`，`\w`的PCRE序列特别关注，因为反斜杠`\`在被Lua语言解析器和Nginx配置文件解析器处理之前都会被剔除掉。所以，以下代码片段不能如期工作：
 
 ```nginx
 
  # nginx.conf
  ? location /test {
  ?     content_by_lua '
- ?         local regex = "\d+"  -- THIS IS WRONG!!
+ ?         local regex = "\d+"  -- 这是错的!!
  ?         local m = ngx.re.match("hello, 1234", regex)
  ?         if m then ngx.say(m[0]) else ngx.say("not matched!") end
  ?     ';
  ? }
- # evaluates to "not matched!"
+ # 结果输出"not matched!"
 ```
 
-To avoid this, *double* escape the backslash:
+解决办法是，两次转义反斜杠：
 
 ```nginx
 
@@ -777,12 +777,12 @@ To avoid this, *double* escape the backslash:
          if m then ngx.say(m[0]) else ngx.say("not matched!") end
      ';
  }
- # evaluates to "1234"
+ # 结果输出"1234"
 ```
 
-Here, `\\\\d+` is stripped down to `\\d+` by the Nginx config file parser and this is further stripped down to `\d+` by the Lua language parser before running.
+这里，`\\\\d+`被Nginx配置文件解析器解析成`\\d+`，然后被Lua语言解析器进一步解析成`\d+`，之后运行。
 
-Alternatively, the regex pattern can be presented as a long-bracketed Lua string literal by encasing it in "long brackets", `[[...]]`, in which case backslashes have to only be escaped once for the Nginx config file parser. 
+另外，正则模式串可以表示成long-bracketed Lua字符串的形式（`[[...]]`），这种情况下，只需要为Nginx配置文件parser一次转义。
 
 ```nginx
 
@@ -794,13 +794,12 @@ Alternatively, the regex pattern can be presented as a long-bracketed Lua string
          if m then ngx.say(m[0]) else ngx.say("not matched!") end
      ';
  }
- # evaluates to "1234"
+ # 结果输出"1234"
 ```
 
-Here, `[[\\d+]]` is stripped down to `[[\d+]]` by the Nginx config file parser and this is processed correctly.
+此时，`[[\\d+]]`被Nginx配置文件解析器解析成`[[\d+]]`。
 
-Note that a longer from of the long bracket, `[=[...]=]`, may be required if the regex pattern contains `[...]` sequences. 
-The `[=[...]=]` form may be used as the default form if desired.
+注意，如果正则匹配串中包含`[...]`序列，那么要求使用更长的括号形式`[=[...]=]`。如果需要，`[=[...]=]`可以用作默认形式。
 
 ```nginx
 
@@ -812,11 +811,10 @@ The `[=[...]=]` form may be used as the default form if desired.
          if m then ngx.say(m[0]) else ngx.say("not matched!") end
      ';
  }
- # evaluates to "1234"
+ # 结果输出"1234"
 ```
 
-An alternative approach to escaping PCRE sequences is to ensure that Lua code is placed in external script files and executed using the various `*_by_lua_file` directives. 
-With this approach, the backslashes are only stripped by the Lua language parser and therefore only need to be escaped once each.
+还有一种转义PCRE序列的方法是将Lua代码放在外部脚本文件中，并使用`*_by_lua_file`指令。该方法反斜杠只需要为Lua语言解析器转义一次。
 
 ```lua
 
@@ -824,10 +822,10 @@ With this approach, the backslashes are only stripped by the Lua language parser
  local regex = "\\d+"
  local m = ngx.re.match("hello, 1234", regex)
  if m then ngx.say(m[0]) else ngx.say("not matched!") end
- -- evaluates to "1234"
+ -- 结果输出"1234"
 ```
 
-Within external script files, PCRE sequences presented as long-bracketed Lua string literals do not require modification. 
+在外部脚本文件中，long-bracketed形式的PCRE序列不需要改动。
  
 ```lua
 
@@ -835,7 +833,7 @@ Within external script files, PCRE sequences presented as long-bracketed Lua str
  local regex = [[\d+]]
  local m = ngx.re.match("hello, 1234", regex)
  if m then ngx.say(m[0]) else ngx.say("not matched!") end
- -- evaluates to "1234"
+ -- 结果输出"1234"
 ```
 
 [回到目录](#table-of-contents)
@@ -857,7 +855,7 @@ Certain Lua APIs provided by ngx_lua do not work in Nginx's SPDY mode yet: [ngx.
 Missing data on short circuited requests
 ----------------------------------------
 
-Nginx may terminate a request early with (at least):
+以下状态码的情况，Nginx会提前结束请求：
 
 * 400 (Bad Request)
 * 405 (Not Allowed)
@@ -868,10 +866,7 @@ Nginx may terminate a request early with (at least):
 * 500 (Internal Server Error)
 * 501 (Not Implemented)
 
-This means that phases that normally run are skipped, such as the rewrite or
-access phase. This also means that later phases that are run regardless, e.g.
-[log_by_lua](#log_by_lua), will not have access to information that is normally set in those
-phases.
+这意味着，正常运行的阶段会略过，如rewrite或access阶段。也意味着，后续的阶段如[log_by_lua](#log_by_lua)不会访问到之前阶段正常设置的信息。
 
 [回到目录](#table-of-contents)
 
