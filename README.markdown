@@ -338,7 +338,7 @@ Build the source with this module:
 
  # Here we assume Nginx is to be installed under /opt/nginx/.
  ./configure --prefix=/opt/nginx \
-         --with-ld-opt='-Wl,-rpath,/path/to/luajit-or-lua/lib" \
+         --with-ld-opt='-Wl,-rpath,/path/to/luajit-or-lua/lib' \
          --add-module=/path/to/ngx_devel_kit \
          --add-module=/path/to/lua-nginx-module
 
@@ -6566,24 +6566,24 @@ ngx.thread.kill
 
 ngx.on_abort
 ------------
-**syntax:** *ok, err = ngx.on_abort(callback)*
+**语法:** *ok, err = ngx.on_abort(callback)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Registers a user Lua function as the callback which gets called automatically when the client closes the (downstream) connection prematurely.
+将一个用户Lua函数注册为回调函数，当客户端连接提前关闭时，被自动调用。
 
-Returns `1` if the callback is registered successfully or returns `nil` and a string describing the error otherwise.
+如果回调注册成功返回`1`，否则返回`nil`和一个错误描述字符串。
 
-All the [Nginx API for Lua](#nginx-api-for-lua) can be used in the callback function because the function is run in a special "light thread", just as those "light threads" created by [ngx.thread.spawn](#ngxthreadspawn).
+回调函数中可以使用所有的[Nginx API for Lua](#nginx-api-for-lua)，因为回调函数运行在一个特殊的`轻线程`中。
 
-The callback function can decide what to do with the client abortion event all by itself. For example, it can simply ignore the event by doing nothing and the current Lua request handler will continue executing without interruptions. And the callback function can also decide to terminate everything by calling [ngx.exit](#ngxexit), for example,
+回调函数本身自己决定如何处理客户端退出事件。例如，可以简单忽略该事件（什么也不做），当前的lua请求处理函数不中断地继续执行。也可以通过调用[ngx.exit](#ngxexit)终止当前请求的处理。例如：
 
 ```lua
 
  local function my_cleanup()
-     -- custom cleanup work goes here, like cancelling a pending DB transaction
+     -- 这里是自定义的清理工作，比如取消等待的数据库事务
 
-     -- now abort all the "light threads" running in the current request handler
+     -- 现在退出在当前请求处理函数中运行的所有“轻线程”
      ngx.exit(499)
  end
 
@@ -6594,11 +6594,11 @@ The callback function can decide what to do with the client abortion event all b
  end
 ```
 
-When [lua_check_client_abort](#lua_check_client_abort) is set to `off` (which is the default), then this function call will always return the error message "lua_check_client_abort is off".
+当[lua_check_client_abort](#lua_check_client_abort)设置为`off` 时（默认情况），该函数会总是返回错误信息“lua_check_client_abort is off”。
 
-According to the current implementation, this function can only be called once in a single request handler; subsequent calls will return the error message "duplicate call".
+根据当前的实现，该函数在单个请求处理函数中仅能调用一次；后续的调用会返回错误信息"duplicate call"。
 
-This API was first introduced in the `v0.7.4` release.
+该API最早出现在`v0.7.4`版本中。
 
 See also [lua_check_client_abort](#lua_check_client_abort).
 
@@ -6606,9 +6606,9 @@ See also [lua_check_client_abort](#lua_check_client_abort).
 
 ngx.timer.at
 ------------
-**syntax:** *ok, err = ngx.timer.at(delay, callback, user_arg1, user_arg2, ...)*
+**语法:** *ok, err = ngx.timer.at(delay, callback, user_arg1, user_arg2, ...)*
 
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
 Creates an Nginx timer with a user callback function as well as optional user arguments.
 
