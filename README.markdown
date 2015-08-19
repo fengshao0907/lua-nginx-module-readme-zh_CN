@@ -5954,43 +5954,21 @@ tcpsock:connect
 
 tcpsock:sslhandshake
 --------------------
-**syntax:** *session, err = tcpsock:sslhandshake(reused_session?, server_name?, ssl_verify?)*
+**语法:** *session, err = tcpsock:sslhandshake(reused_session?, server_name?, ssl_verify?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-Does SSL/TLS handshake on the currently established connection.
+在当前已建立的连接上，做SSL/TLS握手操作。
 
-The optional `reused_session` argument can take a former SSL
-session userdata returned by a previous `sslhandshake`
-call for exactly the same target. For short-lived connections, reusing SSL
-sessions can usually speed up the handshake by one order by magnitude but it
-is not so useful if the connection pool is enabled. This argument defaults to
-`nil`. If this argument takes the boolean `false` value, no SSL session
-userdata would return by this call and only a Lua boolean will be returned as
-the first return value; otherwise the current SSL session will
-always be returned as the first argument in case of successes.
+选项`reused_seesion`对相同的目标使用之前通过`sslhandshake`返回的SSL会话数据。对于短链接，重用SSL会话通常可以一个数量级的加速握手，但是，如果使用连接池时，该选项并不多么有用。该参数默认为`nil`。如果该参数指定为`false`，该调用不返回SSL会话用户数据，只返回一个布尔值作为第一个返回值；否则总是返回当前SSL会话作为第一个作为第一个参数（如果成功的话）。
 
-The optional `server_name` argument is used to specify the server
-name for the new TLS extension Server Name Indication (SNI). Use of SNI can
-make different servers share the same IP address on the server side. Also,
-when SSL verification is enabled, this `server_name` argument is
-also used to validate the server name specified in the server certificate sent from
-the remote.
+选项`server_name`用于指定用于新TLS扩展SNI的主机名。使用SNI可以在服务端同一个IP地址共享不同的服务器主机。而且，如果开启了SSL校验，该`server_name`参数也用于验证远端发来的服务证书中指定的服务器名称的有效性。
 
-The optional `ssl_verify` argument takes a Lua boolean value to
-control whether to perform SSL verification. When set to `true`, the server
-certificate will be verified according to the CA certificates specified by
-the [lua_ssl_trusted_certificate](#lua_ssl_trusted_certificate) directive.
-You may also need to adjust the [lua_ssl_verify_depth](#lua_ssl_verify_depth)
-directive to control how deep we should follow along the certificate chain.
-Also, when the `ssl_verify` argument is true and the
-`server_name` argument is also specified, the latter will be used
-to validate the server name in the server certificate.
+选项`ssl_verify`是一个布尔值，用于控制是否进行SSL校验。如果设为`true`，会根据[lua_ssl_trusted_certificate](#lua_ssl_trusted_certificate)指令指定的CA证书对服务证书进行校验。你也可能使用[lua_ssl_verify_depth](#lua_ssl_verify_depth)指令来控制跟踪证书链的深度。同样，当`ssl_vrify`指定为true，并指定了`server_name`，后者会用于主机名校验。
 
-For connections that have already done SSL/TLS handshake, this method returns
-immediately.
+对于已经进行过SSL/TLS握手操作的链接，该方法立即返回。
 
-This method was first introduced in the `v0.9.11` release.
+该方法最早出现在`v0.9.11`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -5998,7 +5976,7 @@ tcpsock:send
 ------------
 **语法:** *bytes, err = tcpsock:send(data)*
 
-**=上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
 在当前TCP或Unix Domain Socket连接上以非阻塞的方式发送数据。
 
@@ -6200,13 +6178,13 @@ tcpsock:settimeout
 
 tcpsock:setoption
 -----------------
-**syntax:** *tcpsock:setoption(option, value?)*
+**语法:** *tcpsock:setoption(option, value?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua*, ngx.timer.**
 
-This function is added for [LuaSocket](http://w3.impa.br/~diego/software/luasocket/tcp.html) API compatibility and does nothing for now. Its functionality will be implemented in future.
+该函数的加入是为了兼容[LuaSocket](http://w3.impa.br/~diego/software/luasocket/tcp.html) API，现在不做任何事情。未来会实现其功能。
 
-This feature was first introduced in the `v0.5.0rc1` release.
+该功能最早出现在`v0.5.0rc1`版本。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6600,7 +6578,7 @@ ngx.on_abort
 
 该API最早出现在`v0.7.4`版本中。
 
-See also [lua_check_client_abort](#lua_check_client_abort).
+也可以参考[lua_check_client_abort](#lua_check_client_abort).
 
 [回到目录](#nginx-api-for-lua)
 
@@ -6610,40 +6588,19 @@ ngx.timer.at
 
 **上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua*, log_by_lua*, ngx.timer.**
 
-Creates an Nginx timer with a user callback function as well as optional user arguments.
+创建一个Nginx定时器，该定时器带有一个用户回调函数和可选用户参数。
 
-The first argument, `delay`, specifies the delay for the timer,
-in seconds. One can specify fractional seconds like `0.001` to mean 1
-millisecond here. `0` delay can also be specified, in which case the
-timer will immediately expire when the current handler yields
-execution.
+第一个参数`delay`指定了定时器的延时秒数。可以指定小数部分如`0.001`表示1毫秒。也可以指定为`0`表示当处理函数执行时定时器立即失效。
 
-The second argument, `callback`, can
-be any Lua function, which will be invoked later in a background
-"light thread" after the delay specified. The user callback will be
-called automatically by the Nginx core with the arguments `premature`,
-`user_arg1`, `user_arg2`, and etc, where the `premature`
-argument takes a boolean value indicating whether it is a premature timer
-expiration or not, and `user_arg1`, `user_arg2`, and etc, are
-those (extra) user arguments specified when calling `ngx.timer.at`
-as the remaining arguments.
+第二个参数`callback`可以是任何Lua函数，该函数会在指定的延时后在后台轻线程中被执行。用户回调可以被Nginx内核自动调用，带有参数`premature`，`user_arg1`，`user_arg2`等。`premature`为布尔值，表示该定时器是否提前过期；`user_arg1`、`user_arg2`等参数是调用`ngx.timer.at`时指定的用户参数。
 
-Premature timer expiration happens when the Nginx worker process is
-trying to shut down, as in an Nginx configuration reload triggered by
-the `HUP` signal or in an Nginx server shutdown. When the Nginx worker
-is trying to shut down, one can no longer call `ngx.timer.at` to
-create new timers with nonzero delays and in that case `ngx.timer.at` will return `nil` and
-a string describing the error, that is, "process exiting".
+定时器提前过期发生在Nginx工作进程关闭时（`HUP`信号触发的Nginx配置重载或Nginx服务器关闭）。当Nginx工作进程试图关闭时，将不能调用`ngx.timer.at`创建非零延迟的计时器，此时，`ngx.timer.at`会返回`nil`和一个错误描述字符串"process exiting"。
 
-Starting from the `v0.9.3` release, it is allowed to create zero-delay timers even when the Nginx worker process starts shutting down.
+然而，从`v0.9.3`版本开始，在Nginx工作进程关闭时允许创建零延时计时器。
 
-When a timer expires, the user Lua code in the timer callback is
-running in a "light thread" detached completely from the original
-request creating the timer. So objects with the same lifetime as the
-request creating them, like [cosockets](#ngxsockettcp), cannot be shared between the
-original request and the timer user callback function.
+当定时器过期时，运行在轻线程中的用户代码完全脱离创建定时器的请求。所以，和创建计时器有相同生命周期的对象，如[cosockets](#ngxsockettcp)，不能在原始请求和用户定时器回调函数之间共享。
 
-Here is a simple example:
+这是一个例子：
 
 ```nginx
 
