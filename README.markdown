@@ -2568,18 +2568,18 @@ Network I/O operations in user code should only be done through the Nginx Lua AP
 
 ngx.arg
 -------
-**syntax:** *val = ngx.arg\[index\]*
+**语法:** *val = ngx.arg\[index\]*
 
-**context:** *set_by_lua*, body_filter_by_lua**
+**上下文:** *set_by_lua*, body_filter_by_lua**
 
-When this is used in the context of the [set_by_lua](#set_by_lua) or [set_by_lua_file](#set_by_lua_file) directives, this table is read-only and holds the input arguments to the config directives:
+当用于[set_by_lua](#set_by_lua)或[set_by_lua_file](#set_by_lua_file)指令上下文时，该table是只读的，包含输入参数：
 
 ```lua
 
  value = ngx.arg[n]
 ```
 
-Here is an example
+下面是一个例子：
 
 ```nginx
 
@@ -2595,11 +2595,11 @@ Here is an example
  }
 ```
 
-that writes out `88`, the sum of `32` and `56`.
+输出`88`，`32`和`56`的和。
 
-When this table is used in the context of [body_filter_by_lua](#body_filter_by_lua) or [body_filter_by_lua_file](#body_filter_by_lua_file), the first element holds the input data chunk to the output filter code and the second element holds the boolean flag for the "eof" flag indicating the end of the whole output data stream.
+当用于[body_filter_by_lua](#body_filter_by_lua)或[body_filter_by_lua_file](#body_filter_by_lua_file)上下文时，第一个元素为传给输出过滤代码的输入数据块，第二个元素是标示整个输出数据流结束的布尔标志。
 
-The data chunk and "eof" flag passed to the downstream Nginx output filters can also be overridden by assigning values directly to the corresponding table elements. When setting `nil` or an empty Lua string value to `ngx.arg[1]`, no data chunk will be passed to the downstream Nginx output filters at all.
+传给Nginx下游输出过滤器的数据块和”eof“标志可以通过直接赋值给对应table元素来重写。当设定`nil`或空字符串给`ngx.arg[1]`时，不会有数据块传给下游Nginx输出过滤器。
 
 [回到目录](#nginx-api-for-lua)
 
@@ -2659,7 +2659,7 @@ Nginx正则捕获组变量`$1`，`$2`，`$3`等也可以通过此方法被读取
 
 Core constants
 --------------
-**context:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, *log_by_lua*, ngx.timer.**
+**上下文:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, *log_by_lua*, ngx.timer.**
 
 ```lua
 
@@ -2670,22 +2670,22 @@ Core constants
    ngx.DECLINED (-5)
 ```
 
-Note that only three of these constants are utilized by the [Nginx API for Lua](#nginx-api-for-lua) (i.e., [ngx.exit](#ngxexit) accepts `NGX_OK`, `NGX_ERROR`, and `NGX_DECLINED` as input).
+注意，以上只有三个常量被[Nginx API for Lua](#nginx-api-for-lua)使用（如，[ngx.exit](#ngxexit)接受`NGX_OK`，`NGX_ERROR`和`NGX_DECLINED`作为输入）。
 
 ```lua
 
    ngx.null
 ```
 
-The `ngx.null` constant is a `NULL` light userdata usually used to represent nil values in Lua tables etc and is similar to the [lua-cjson](http://www.kyne.com.au/~mark/software/lua-cjson.php) library's `cjson.null` constant. This constant was first introduced in the `v0.5.0rc5` release.
+`ngx.null`常量是一个通常用于表示Lua表中nil值的`NULL`用户数据，类似于[lua-cjson](http://www.kyne.com.au/~mark/software/lua-cjson.php)库中的`cjson.null`常量。该常量首次出现在`v0.5.0rc5`版本中。
 
-The `ngx.DECLINED` constant was first introduced in the `v0.5.0rc19` release.
+`ngx.DECLINED`常量首次出现在`v0.5.0rc19`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
 HTTP method constants
 ---------------------
-**context:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**上下文:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
 
       ngx.HTTP_GET
@@ -2705,13 +2705,13 @@ HTTP method constants
       ngx.HTTP_TRACE     (added in the v0.8.2 release)
 
 
-These constants are usually used in [ngx.location.capture](#ngxlocationcapture) and [ngx.location.capture_multi](#ngxlocationcapture_multi) method calls.
+这些常量通常用于[ngx.location.capture](#ngxlocationcapture)和[ngx.location.capture_multi](#ngxlocationcapture_multi)方法调用。
 
 [回到目录](#nginx-api-for-lua)
 
 HTTP status constants
 ---------------------
-**context:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**上下文:** *init_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
 ```nginx
 
@@ -2738,7 +2738,7 @@ HTTP status constants
 
 Nginx log level constants
 -------------------------
-**context:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**上下文:** *set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
 ```lua
 
@@ -2753,34 +2753,34 @@ Nginx log level constants
    ngx.DEBUG
 ```
 
-These constants are usually used by the [ngx.log](#ngxlog) method.
+这些常量通常用于[ngx.log](#ngxlog)方法。
 
 [回到目录](#nginx-api-for-lua)
 
 print
 -----
-**syntax:** *print(...)*
+**语法:** *print(...)*
 
-**context:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**上下文:** *init_by_lua*, init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
-Writes argument values into the nginx `error.log` file with the `ngx.NOTICE` log level.
+使用`ngx.NOTICE`日志级别，将参数值写入nginx的`error.log`文件。
 
-It is equivalent to
+这等价于：
 
 ```lua
 
  ngx.log(ngx.NOTICE, ...)
 ```
 
-Lua `nil` arguments are accepted and result in literal `"nil"` strings while Lua booleans result in literal `"true"` or `"false"` strings. And the `ngx.null` constant will yield the `"null"` string output.
+`nil`参数也是可接受的，会输出`"nil"`字符串，布尔变量会输出`"true"`或者`"false"`字符串。`ngx.null`常量会输出`"null"`字符串。
 
-There is a hard coded `2048` byte limitation on error message lengths in the Nginx core. This limit includes trailing newlines and leading time stamps. If the message size exceeds this limit, Nginx will truncate the message text accordingly. This limit can be manually modified by editing the `NGX_MAX_ERROR_STR` macro definition in the `src/core/ngx_log.h` file in the Nginx source tree.
+在Nginx内核中，有错误信息长度`2048`字节的硬编码限制。该限制包括末尾的换行符和时间戳前缀。如果信息长度超过该限制，Nginx会相应地截断输出。该限制可以通过修改`NGX_MAX_ERROR_STR`宏定义来手动改变该限制，该宏定义在Nginx源文件`src/core/ngx_log.h`中。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.ctx
 -------
-**context:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
+**上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
 This table can be used to store per-request Lua context data and has a life time identical to the current request (as with the Nginx variables). 
 
@@ -6608,10 +6608,8 @@ ngx.timer.at
      ...
      log_by_lua '
          local function push_data(premature, uri, args, status)
-             -- push the data uri, args, and status to the remote
-             -- via ngx.socket.tcp or ngx.socket.udp
-             -- (one may want to buffer the data in Lua a bit to
-             -- save I/O operations)
+             -- 使用ngx.socket.tcp或ngx.socket.udp将uri，args和status
+             -- 推向远端（为了节省IO操作，你可能想在Lua中缓存数据）
          end
          local ok, err = ngx.timer.at(0, push_data,
                                       ngx.var.uri, ngx.var.args, ngx.header.status)
@@ -6623,14 +6621,14 @@ ngx.timer.at
  }
 ```
 
-One can also create infinite re-occuring timers, for instance, a timer getting triggered every `5` seconds, by calling `ngx.timer.at` recursively in the timer callback function. Here is such an example,
+也可以创建无限重计数的定时器，比如，创建每5秒触发一次的定时器，然后在计时器的回调函数中递归调用`ngx.timer.at`。就像这样：
 
 ```lua
 
  local delay = 5
  local handler
  handler = function (premature)
-     -- do some routine job in Lua just like a cron job
+     -- 就像cron任务一样，在Lua中处理job
      if premature then
          return
      end
@@ -6648,42 +6646,17 @@ One can also create infinite re-occuring timers, for instance, a timer getting t
  end
 ```
 
-Because timer callbacks run in the background and their running time
-will not add to any client request's response time, they can easily
-accumulate in the server and exhaust system resources due to either
-Lua programming mistakes or just too much client traffic. To prevent
-extreme consequences like crashing the Nginx server, there are
-built-in limitations on both the number of "pending timers" and the
-number of "running timers" in an Nginx worker process. The "pending
-timers" here mean timers that have not yet been expired and "running
-timers" are those whose user callbacks are currently running.
+因为运行于后端的定时器回调及其运行时间不会附加到任何用户请求的响应时间，因此它们很容易在服务端累积，并由于编程错误或访问量过大导致耗尽系统资源。为了避免使Nginx服务崩溃这种极端后果，有一些像挂起的计时器数和Nginx工作进程中运行的计时器数等内部限制。挂起的计时器指尚未过期的定时器，运行的定时器指那些正在运行用户回调的定时器。
 
-The maximal number of pending timers allowed in an Nginx
-worker is constrolled by the [lua_max_pending_timers](#lua_max_pending_timers)
-directive. The maximal number of running timers is controlled by the
-[lua_max_running_timers](#lua_max_running_timers) directive.
+通过[lua_max_pending_timers](#lua_max_pending_timers)指令可以控制一个Nginx工作进程允许的最大挂起计时器数目。[lua_max_running_timers](#lua_max_running_timers)指令控制最大运行计时器数目。
 
-According to the current implementation, each "running timer" will
-take one (fake) connection record from the global connection record
-list configured by the standard [worker_connections](http://nginx.org/en/docs/ngx_core_module.html#worker_connections) directive in
-`nginx.conf`. So ensure that the
-[worker_connections](http://nginx.org/en/docs/ngx_core_module.html#worker_connections) directive is set to
-a large enough value that takes into account both the real connections
-and fake connections required by timer callbacks (as limited by the
-[lua_max_running_timers](#lua_max_running_timers) directive).
+按照当前的实现，每个运行的定时器会在全局连接记录表中取一个（假）连接记录，全局连接记录表是在`nginx.conf`中通过[worker_connections](http://nginx.org/en/docs/ngx_core_module.html#worker_connections)指令配置的。所以，需要保证[worker_connections](http://nginx.org/en/docs/ngx_core_module.html#worker_connections)指令设置了一个足够大的值（包括真实的连接和虚假连接）。
 
-A lot of the Lua APIs for Nginx are enabled in the context of the timer
-callbacks, like stream/datagram cosockets ([ngx.socket.tcp](#ngxsockettcp) and [ngx.socket.udp](#ngxsocketudp)), shared
-memory dictionaries ([ngx.shared.DICT](#ngxshareddict)), user coroutines ([coroutine.*](#coroutinecreate)),
-user "light threads" ([ngx.thread.*](#ngxthreadspawn)), [ngx.exit](#ngxexit), [ngx.now](#ngxnow)/[ngx.time](#ngxtime),
-[ngx.md5](#ngxmd5)/[ngx.sha1_bin](#ngxsha1_bin), are all allowed. But the subrequest API (like
-[ngx.location.capture](#ngxlocationcapture)), the [ngx.req.*](#ngxreqstart_time) API, the downstream output API
-(like [ngx.say](#ngxsay), [ngx.print](#ngxprint), and [ngx.flush](#ngxflush)) are explicitly disabled in
-this context.
+在计时器回调的上下文中可以使用绝大多数的Nginx Lua API，比如，流/数据报cosocket（[ngx.socket.tcp](#ngxsockettcp)和[ngx.socket.udp](#ngxsocketudp)），共享内存字典（[ngx.shared.DICT](#ngxshareddict)），用户协程（[coroutine.*](#coroutinecreate)），用户轻线程（[ngx.thread.*](#ngxthreadspawn)），[ngx.exit](#ngxexit)，[ngx.now](#ngxnow)/[ngx.time](#ngxtime)，[ngx.md5](#ngxmd5)/[ngx.sha1_bin](#ngxsha1_bin)等都是允许的。但子请求API（比如[ngx.location.capture](#ngxlocationcapture)），[ngx.req.*](#ngxreqstart_time)系列API，下游输出API（比如[ngx.say](#ngxsay)，[ngx.print](#ngxprint)，[ngx.flush](#ngxflush)等）是在该上下文中显示禁用的。
 
-You can pass most of the standard Lua values (nils, booleans, numbers, strings, tables, closures, file handles, and etc) into the timer callback, either explicitly as user arguments or implicitly as upvalues for the callback closure. There are several exceptions, however: you *cannot* pass any thread objects returned by [coroutine.create](#coroutinecreate) and [ngx.thread.spawn](#ngxthreadspawn) or any cosocket objects returned by [ngx.socket.tcp](#ngxsockettcp), [ngx.socket.udp](#ngxsocketudp), and [ngx.req.socket](#ngxreqsocket) because these objects' lifetime is bound to the request context creating them while the timer callback is detached from the creating request's context (by design) and runs in its own (fake) request context. If you try to share the thread or cosocket objects across the boundary of the creating request, then you will get the "no co ctx found" error (for threads) or "bad request" (for cosockets). It is fine, however, to create all these objects inside your timer callback.
+你可以向计时器回调函数传递大多数的标准Lua值（nil，boolean，number，string，table，closure，文件句柄等），或者显示地以用户参数的形式，或者隐式地作为回调closure的上值。这里有一些例外：**不能**传递函数[coroutine.create](#coroutinecreate)，[ngx.thread.spawn](#ngxthreadspawn)返回的线程对象，或者[ngx.socket.tcp](#ngxsockettcp)，[ngx.socket.udp](#ngxsocketudp)和[ngx.req.socket](#ngxreqsocket)返回的cosocket对象，因为当定时器回调与创建请求的上下文脱离，并运行在自身请求（假的）上下文时，它们的生命周期与创建它们的请求上下文相关。如果你试图在请求间共享线程体活cosocket对象，你会得到“no co ctx found"错误（对于线程来说）或者"bad request"错误（对于cosocket来说）。但是，在定时器回调中创建这些对象是可以的。
 
-This API was first introduced in the `v0.8.0` release.
+该API首次出现在`v0.8.0`版本中。
 
 [回到目录](#nginx-api-for-lua)
 
