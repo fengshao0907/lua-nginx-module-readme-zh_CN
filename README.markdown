@@ -2782,9 +2782,9 @@ ngx.ctx
 -------
 **上下文:** *init_worker_by_lua*, set_by_lua*, rewrite_by_lua*, access_by_lua*, content_by_lua*, header_filter_by_lua*, body_filter_by_lua, log_by_lua*, ngx.timer.**
 
-This table can be used to store per-request Lua context data and has a life time identical to the current request (as with the Nginx variables). 
+该table可以用于存储每请求的Lua上下文数据，与当前请求有相同的生命周期（和Nginx变量一样）。
 
-Consider the following example,
+考虑下面的例子：
 
 ```nginx
 
@@ -2801,16 +2801,16 @@ Consider the following example,
  }
 ```
 
-Then `GET /test` will yield the output
+`GET /test`会输出：
 
 ```bash
 
  79
 ```
 
-That is, the `ngx.ctx.foo` entry persists across the rewrite, access, and content phases of a request.
+也就是说，`ngx.ctx.foo`的值是可以跨请求的rewrite、access和content阶段的。
 
-Every request, including subrequests, has its own copy of the table. For example:
+包括子请求在内的所有请求都有一份自己的table拷贝。例如：
 
 ```nginx
 
@@ -2833,7 +2833,7 @@ Every request, including subrequests, has its own copy of the table. For example
  }
 ```
 
-Then `GET /main` will give the output
+`GET /main`将会输出：
 
 ```bash
 
@@ -2843,9 +2843,9 @@ Then `GET /main` will give the output
  main post: 73
 ```
 
-Here, modification of the `ngx.ctx.blah` entry in the subrequest does not affect the one in the parent request. This is because they have two separate versions of `ngx.ctx.blah`.
+这里，在子请求中对`ngx.ctx.blah`的修改不会影响父请求的变量。这是因为它们拥有两个不同版本的`ngx.ctx.blah`。
 
-Internal redirection will destroy the original request `ngx.ctx` data (if any) and the new request will have an empty `ngx.ctx` table. For instance,
+内部重定向会破坏原始请求的`ngx.ctx`数据，新请求会有一个空的`ngx.ctx`表。例如：
 
 ```nginx
 
@@ -2863,27 +2863,27 @@ Internal redirection will destroy the original request `ngx.ctx` data (if any) a
  }
 ```
 
-Then `GET /orig` will give
+`GET /orig`会输出：
 
 ```bash
 
  nil
 ```
 
-rather than the original `"hello"` value.
+而不是输出原始的`"hello"`。
 
-Arbitrary data values, including Lua closures and nested tables, can be inserted into this "magic" table. It also allows the registration of custom meta methods.
+任意类型的数据，包括Lua closures和嵌套tables，都可以插入到`ngx.ctx`表。它也允许注册自定义的元方法。
 
-Overriding `ngx.ctx` with a new Lua table is also supported, for example,
+用一个新表覆盖`ngx.ctx`也是支持的，例如：
 
 ```lua
 
  ngx.ctx = { foo = 32, bar = 54 }
 ```
 
-When being used in the context of [init_worker_by_lua*](#init_worker_by_lua), this table just has the same lifetime of the current Lua handler.
+当该表用于[init_worker_by_lua*](#init_worker_by_lua)上下文时，该表的生命周期与当前的Lua处理函数相同。
 
-The `ngx.ctx` lookup requires relatively expensive metamethod calls and it is much slower than explicitly passing per-request data along by your own function arguments. So do not abuse this API for saving your own function arguments because it usually has quite some performance impact. And because of the metamethod magic, never "local" the `ngx.ctx` table outside your function scope.
+`ngx.ctx`表的索引相对昂贵的元方法调用，它比通过函数参数显示传送请求数据要慢得多。所以，不要为了节省函数参数而滥用该API，因为这通常带来性能损失。也由于元方法魔法，不要在你的函数作用域外部使用”local“局部化`ngx.ctx`。
 
 [回到目录](#nginx-api-for-lua)
 
