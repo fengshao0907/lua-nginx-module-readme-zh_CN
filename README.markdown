@@ -2889,37 +2889,32 @@ ngx.ctx
 
 ngx.location.capture
 --------------------
-**syntax:** *res = ngx.location.capture(uri, options?)*
+**语法:** *res = ngx.location.capture(uri, options?)*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Issue a synchronous but still non-blocking *Nginx Subrequest* using `uri`.
+对`uri`发起同步非阻塞的*Nginx子请求*。
 
-Nginx's subrequests provide a powerful way to make non-blocking internal requests to other locations configured with disk file directory or *any* other nginx C modules like `ngx_proxy`, `ngx_fastcgi`, `ngx_memc`,
-`ngx_postgres`, `ngx_drizzle`, and even ngx_lua itself and etc etc etc.
+Nginx子请求用于发起非阻塞内部子请求到磁盘文件目录对应的location或任何其他Nginx C模块，如`ngx_proxy`，`ngx_fastcgi`，`ngx_memc`，`ngx_postgres`，`ngx_drizzle`或者ngx_lua自身。
 
-Also note that subrequests just mimic the HTTP interface but there is *no* extra HTTP/TCP traffic *nor* IPC involved. Everything works internally, efficiently, on the C level.
+但注意，子请求指示模仿HTTP接口，但并没有涉及额外的HTTP/TCP或IPC流量。一切都在内部以C级别高效运作。
 
-Subrequests are completely different from HTTP 301/302 redirection (via [ngx.redirect](#ngxredirect)) and internal redirection (via [ngx.exec](#ngxexec)).
+子请求与HTTP的301/302跳转和内部跳转完全不同。
 
-You should always read the request body (by either calling [ngx.req.read_body](#ngxreqread_body) or configuring [lua_need_request_body](#lua_need_request_body) on) before initiating a subrequest.
+在初始化一个子请求之前，你应该始终读取请求体（或者通过调用[ngx.req.read_body](#ngxreqread_body)，或者通过配置[lua_need_request_body](#lua_need_request_body)）。
 
-Here is a basic example:
+下面是一个简单的例子：
 
 ```lua
 
  res = ngx.location.capture(uri)
 ```
 
-Returns a Lua table with three slots (`res.status`, `res.header`, `res.body`, and `res.truncated`).
+返回含有四个元素的table（`res.status`，`res.header`，`res.body`，`res.truncated`）。
 
-`res.status` holds the response status code for the subrequest response.
+`res.status`为子请求响应码。
 
-`res.header` holds all the response headers of the
-subrequest and it is a normal Lua table. For multi-value response headers,
-the value is a Lua (array) table that holds all the values in the order that
-they appear. For instance, if the subrequest response headers contain the following
-lines:
+`res.header`为子请求的所有响应头，它是一个Lua table。对于多值的响应头，值为以出现次序排列的Lua数组table。例如，如果子请求响应头中包含以下几行：
 
 ```bash
 
@@ -2928,43 +2923,39 @@ lines:
  Set-Cookie: baz=blah
 ```
 
-Then `res.header["Set-Cookie"]` will be evaluated to the table value
-`{"a=3", "foo=bar", "baz=blah"}`.
+`res.header["Set-Cookie"]`的值为table值`{"a=3", "foo=bar", "baz=blah"}`。
 
-`res.body` holds the subrequest's response body data, which might be truncated. You always need to check the `res.truncated` boolean flag to see if `res.body` contains truncated data. The data truncation here can only be caused by those unrecoverable errors in your subrequests like the cases that the remote end aborts the connection prematurely in the middle of the response body data stream or a read timeout happens when your subrequest is receiving the response body data from the remote.
+`res.body`为子请求响应体数据，可能是被截断过的。你总是需要检查布尔标志`res.truncated`来确定是否`res.body`为截断后数据。数据截断只可能发生在子请求遇到不可恢复错误时（如，在接收响应过程中远端提前退出连接，或子请求从远端接收响应时发生读取超时等）。
 
-URI query strings can be concatenated to URI itself, for instance,
+URI查询字符串可能会被连接成URI本身，例如：
 
 ```lua
 
  res = ngx.location.capture('/foo/bar?a=3&b=4')
 ```
 
-Named locations like `@foo` are not allowed due to a limitation in
-the nginx core. Use normal locations combined with the `internal` directive to
-prepare internal-only locations.
+由于Nginx内核的限制，不允许使用像`@foo`这样的具名location。对于内部使用的location请与`internal`指令一起使用。
 
-An optional option table can be fed as the second
-argument, which supports the options:
+第二个参数是可选的参数表，支持以下选项：
 
 * `method`
-	specify the subrequest's request method, which only accepts constants like `ngx.HTTP_POST`.
+    指定子请求的请求方法，值接受像`ngx.HTTP_POST`这样的常量。
 * `body`
-	specify the subrequest's request body (string value only).
+    指定子请求的请求体（只允许字符串类型）。
 * `args`
-	specify the subrequest's URI query arguments (both string value and Lua tables are accepted)
+    指定子请求的URI查询参数（接受字符串类型和table类型）。
 * `ctx`
-	specify a Lua table to be the [ngx.ctx](#ngxctx) table for the subrequest. It can be the current request's [ngx.ctx](#ngxctx) table, which effectively makes the parent and its subrequest to share exactly the same context table. This option was first introduced in the `v0.3.1rc25` release.
-* `vars`
-	take a Lua table which holds the values to set the specified Nginx variables in the subrequest as this option's value. This option was first introduced in the `v0.3.1rc31` release.
+    为子请求指定一个table作为[ngx.ctx](#ngxctx)。这可以是当前请求的[ngx.ctx](#ngxctx)表，这样可以有效地使父请求和子请求共享相同的上下文。该选项首次出现在`v0.3.1rc25`版本中。
+* `vars` 
+    保存用于在子请求中设定特定Nginx变量值的table。该选项最早出现在`v0.3.1rc31`中。
 * `copy_all_vars`
-	specify whether to copy over all the Nginx variable values of the current request to the subrequest in question. modifications of the nginx variables in the subrequest will not affect the current (parent) request. This option was first introduced in the `v0.3.1rc31` release.
+    指定是否拷贝当前请求的Nginx变量值到子请求中。子请求中Nginx变量的修改不会影响当前请求。该选项最早出现在`v0.3.1rc31`中。
 * `share_all_vars`
-	specify whether to share all the Nginx variables of the subrequest with the current (parent) request. modifications of the Nginx variables in the subrequest will affect the current (parent) request. Enabling this option may lead to hard-to-debug issues due to bad side-effects and is considered bad and harmful. Only enable this option when you completely know what you are doing.
+    指定是否在当前请求和子请求之间共享Nginx变量。子请求中变量的修改将会影响当前请求。由于副作用，开启该选项可能导致难以调试的问题出现。请只在你完全了解你的操作时开启该选项。
 * `always_forward_body`
-	when set to true, the current (parent) request's request body will always be forwarded to the subrequest being created if the `body` option is not specified. The request body read by either [ngx.req.read_body()](#ngxreqread_body) or [lua_need_request_body on](#lua_need_request_body) will be directly forwarded to the subrequest without copying the whole request body data when creating the subrequest (no matter the request body data is buffered in memory buffers or temporary files). By default, this option is `false` and when the `body` option is not specified, the request body of the current (parent) request is only forwarded when the subrequest takes the `PUT` or `POST` request method.
+    当该选项设置为true，如果选项`body`没有指定，当前请求的请求体总是会转发给子请求。通过[ngx.req.read_body()](#ngxreqread_body)或[lua_need_request_body on](#lua_need_request_body)读取的请求体将会直接转发给子请求，在创建子请求时不会拷贝整个请求体（无论请求体在内存中还是在临时文件中）。默认情况下，该选项为`false`，当选项`body`没有指定时，当前请求的请求体只会在子请求为`PUT`或`POST`方法时才会被转发。
 
-Issuing a POST subrequest, for example, can be done as follows
+例如，发起一个POST子请求可以这样做：
 
 ```lua
 
@@ -2974,10 +2965,9 @@ Issuing a POST subrequest, for example, can be done as follows
  )
 ```
 
-See HTTP method constants methods other than POST.
-The `method` option is `ngx.HTTP_GET` by default.
+默认情况下，`method`选项为`ngx.HTTP_GET`。
 
-The `args` option can specify extra URI arguments, for instance,
+选项`args`可以指定额外的URI参数，例如：
 
 ```lua
 
@@ -2986,17 +2976,16 @@ The `args` option can specify extra URI arguments, for instance,
  )
 ```
 
-is equivalent to
+等价于：
 
 ```lua
 
  ngx.location.capture('/foo?a=1&b=3&c=%3a')
 ```
 
-that is, this method will escape argument keys and values according to URI rules and
-concatenate them together into a complete query string. The format for the Lua table passed as the `args` argument is identical to the format used in the [ngx.encode_args](#ngxencode_args) method.
+也就是说，该方法会根据URI规则转义参数的键值，并将他们拼接成完整的请求字符串。传递作为`args`参数的table的格式与[ngx.encode_args](#ngxencode_args)中的格式一模一样。
 
-The `args` option can also take plain query strings:
+选项`args`也可以是纯文本查询字符串：
 
 ```lua
 
@@ -3005,14 +2994,13 @@ The `args` option can also take plain query strings:
  )
 ```
 
-This is functionally identical to the previous examples.
+上面的例子在功能上与前一个示例完全一样。
 
-The `share_all_vars` option controls whether to share nginx variables among the current request and its subrequests. 
-If this option is set to `true`, then the current request and associated subrequests will share the same Nginx variable scope. Hence, changes to Nginx variables made by a subrequest will affect the current request.
+选项`share_all_vars`控制是否在当前请求和子请求之间共享Nginx变量。如果该选项设定为`true`，当前请求及其对应的子请求会共享相同的Nginx变量。因此，在子请求中对Nginx变量的修改会影响到当前请求。
 
-Care should be taken in using this option as variable scope sharing can have unexpected side effects. The `args`, `vars`, or `copy_all_vars` options are generally preferable instead.
+需要万分小心的是，变量的作用域共享会带来意想不到的副作用。更推荐使用的选项是`args`，`vars`和`copy_all_vars`。
 
-This option is set to `false` by default
+该选项默认为`false`。
 
 ```nginx
 
@@ -3033,14 +3021,12 @@ This option is set to `false` by default
  }
 ```
 
-Accessing location `/lua` gives
-
+访问location `/lua`会输出：
 
     /other dog: hello world
     /lua: hello world
 
-
-The `copy_all_vars` option provides a copy of the parent request's Nginx variables to subrequests when such subrequests are issued. Changes made to these variables by such subrequests will not affect the parent request or any other subrequests sharing the parent request's variables.
+选项`copy_all_vars`在父请求发起子请求时，为子请求提供了一份父请求Nginx变量的拷贝。在子请求中修改这些变量不会影响父请求或任何其他共享父请求变量的子请求。
 
 ```nginx
 
@@ -3061,21 +3047,14 @@ The `copy_all_vars` option provides a copy of the parent request's Nginx variabl
  }
 ```
 
-Request `GET /lua` will give the output
-
+请求`GET /lua`会输出：
 
     /other dog: hello world
     /lua: hello
 
+注意，如果同时设置了`share_all_vars`和`copy_all_vars`两个选项为true，那么`share_all_vars`选项优先。
 
-Note that if both `share_all_vars` and `copy_all_vars` are set to true, then `share_all_vars` takes precedence.
-
-In addition to the two settings above, it is possible to specify
-values for variables in the subrequest using the `vars` option. These
-variables are set after the sharing or copying of variables has been
-evaluated, and provides a more efficient method of passing specific
-values to a subrequest over encoding them as URL arguments and 
-unescaping them in the Nginx config file.
+除了以上两个设置选项，也可以使用`vars`选项在子请求中为变量赋值。这些变量的设置在变量共享或复制操作之后，这提供了一个给子请求传值的更有效的方法（编码为URL参数并在Nginx配置文件中转义）。
 
 ```nginx
 
@@ -3098,14 +3077,14 @@ unescaping them in the Nginx config file.
  }
 ```
 
-Accessing `/lua` will yield the output
+访问`/lua`输出：
 
 
     dog = hello
     cat = 32
 
 
-The `ctx` option can be used to specify a custom Lua table to serve as the [ngx.ctx](#ngxctx) table for the subrequest.
+`ctx`选项用于为子请求指定一个自定义的table作为[ngx.ctx](#ngxctx)。
 
 ```nginx
 
@@ -3125,14 +3104,13 @@ The `ctx` option can be used to specify a custom Lua table to serve as the [ngx.
  }
 ```
 
-Then request `GET /lua` gives
+请求`GET /lua`输出：
 
 
     bar
     nil
 
-
-It is also possible to use this `ctx` option to share the same [ngx.ctx](#ngxctx) table between the current (parent) request and the subrequest:
+也可以通过`ctx`选项在父子请求之间共享相同的[ngx.ctx](#ngxctx)：
 
 ```nginx
 
@@ -3149,42 +3127,36 @@ It is also possible to use this `ctx` option to share the same [ngx.ctx](#ngxctx
  }
 ```
 
-Request `GET /lua` yields the output
+请求`GET /lua`输出：
 
 
     bar
 
 
-Note that subrequests issued by [ngx.location.capture](#ngxlocationcapture) inherit all the
-request headers of the current request by default and that this may have unexpected side effects on the
-subrequest responses. For example, when using the standard `ngx_proxy` module to serve
-subrequests, an "Accept-Encoding: gzip" header in the main request may result
-in gzipped responses that cannot be handled properly in Lua code. Original request headers should be ignored by setting 
-[proxy_pass_request_headers](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass_request_headers) to `off` in subrequest locations.
+注意，通过[ngx.location.capture](#ngxlocationcapture)发起的子请求默认继承当前请求所有的请求头，这可能在某些子请求响应中产生非预期的副作用。例如，当使用标准的`ngx_proxy`模块响应子请求时，在主请求中的"Accept-Encoding: gzip"头可能导致gzip编码的响应，这无法在Lua代码中正确处理。原始请求头应该在子请求的location中通过将[proxy_pass_request_headers](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass_request_headers)设置为`off`忽略。
 
-When the `body` option is not specified and the `always_forward_body` option is false (the default value), the `POST` and `PUT` subrequests will inherit the request bodies of the parent request (if any).
+当`body`选项没有指定，并且`always_forward_body`为false（默认值）时，`POST`和`PUT`方法子请求会继承父请求的请求体（如果有的话）。
 
-There is a hard-coded upper limit on the number of concurrent subrequests possible for every main request. In older versions of Nginx, the limit was `50` concurrent subrequests and in more recent versions, Nginx `1.1.x` onwards, this was increased to `200` concurrent subrequests. When this limit is exceeded, the following error message is added to the `error.log` file:
+每个请求可以发起的并发子请求上限是有硬编码上限的。在老版本的Nginx中，该上限为`50`，在更新的版本，Nginx `1.1.x`中，该上限增加到`200`。当超过该上限时，下列错误会被添加到`error.log`文件中：
 
 
     [error] 13983#0: *1 subrequests cycle while processing "/uri"
 
+如果需要，该上限可以通过修改源文件`nginx/src/http/ngx_http_request.h`中的宏定义`NGX_HTTP_MAX_SUBREQUESTS`手动改变。
 
-The limit can be manually modified if required by editing the definition of the `NGX_HTTP_MAX_SUBREQUESTS` macro in the `nginx/src/http/ngx_http_request.h` file in the Nginx source tree.
-
-Please also refer to restrictions on capturing locations configured by [subrequest directives of other modules](#locations-configured-by-subrequest-directives-of-other-modules).
+也请注意通过[subrequest directives of other modules](#locations-configured-by-subrequest-directives-of-other-modules)配置的捕获location的限制。
 
 [回到目录](#nginx-api-for-lua)
 
 ngx.location.capture_multi
 --------------------------
-**syntax:** *res1, res2, ... = ngx.location.capture_multi({ {uri, options?}, {uri, options?}, ... })*
+**语法:** *res1, res2, ... = ngx.location.capture_multi({ {uri, options?}, {uri, options?}, ... })*
 
-**context:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
+**上下文:** *rewrite_by_lua*, access_by_lua*, content_by_lua**
 
-Just like [ngx.location.capture](#ngxlocationcapture), but supports multiple subrequests running in parallel.
+同[ngx.location.capture](#ngxlocationcapture)类似，但支持并发执行若干子请求。
 
-This function issues several parallel subrequests specified by the input table and returns their results in the same order. For example,
+该方法通过指定输入table并行发起多个子请求，并以table指定的顺序返回结果。例如：
 
 ```lua
 
@@ -3203,10 +3175,9 @@ This function issues several parallel subrequests specified by the input table a
  end
 ```
 
-This function will not return until all the subrequests terminate.
-The total latency is the longest latency of the individual subrequests rather than the sum.
+该方法直到所有子请求都结束后才会返回。请求的总时延为所有子请求中的最长时延而不是它们的时延之和。
 
-Lua tables can be used for both requests and responses when the number of subrequests to be issued is not known in advance:
+如果发起的子请求数目不能提前知道，Lua table可以同时用于请求和响应：
 
 ```lua
 
@@ -3226,8 +3197,7 @@ Lua tables can be used for both requests and responses when the number of subreq
  end
 ```
 
-The [ngx.location.capture](#ngxlocationcapture) function is just a special form
-of this function. Logically speaking, the [ngx.location.capture](#ngxlocationcapture) can be implemented like this
+函数[ngx.location.capture](#ngxlocationcapture)为该函数的特殊形式。逻辑上，[ngx.location.capture](#ngxlocationcapture)的实现类似于这样：
 
 ```lua
 
@@ -3237,7 +3207,7 @@ of this function. Logically speaking, the [ngx.location.capture](#ngxlocationcap
      end
 ```
 
-Please also refer to restrictions on capturing locations configured by [subrequest directives of other modules](#locations-configured-by-subrequest-directives-of-other-modules).
+也请注意通过[subrequest directives of other modules](#locations-configured-by-subrequest-directives-of-other-modules)配置的捕获location的限制。
 
 [回到目录](#nginx-api-for-lua)
 
